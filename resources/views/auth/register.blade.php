@@ -48,9 +48,9 @@
             <div class="text-red-600 text-xs mt-1 error-message" id="reason_note_error">{{ $message }}</div>
         @enderror
     </div>
-    <button type="submit" class="w-full bg-[#C9A14A] text-white py-2 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-[#b38e3c] transition mb-4">
-        Submit
-        <span class="ml-2">&rarr;</span>
+    <button id="registerBtn" type="submit" class="w-full bg-[#C9A14A] text-white py-2 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-[#b38e3c] transition mb-4">
+        <span id="registerBtnText">Submit</span>
+        <svg id="registerBtnLoader" class="w-5 h-5 animate-spin hidden" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="#fff" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
     </button>
 </form>
 <div class="mt-2 text-center text-gray-600">
@@ -70,6 +70,14 @@
                 input.classList.remove('border-red-500');
                 input.classList.add('border-gray-300');
             });
+        });
+        document.getElementById('registerForm').addEventListener('submit', function() {
+            const btn = document.getElementById('registerBtn');
+            const loader = document.getElementById('registerBtnLoader');
+            const text = document.getElementById('registerBtnText');
+            btn.disabled = true;
+            loader.classList.remove('hidden');
+            text.textContent = 'Submitting...';
         });
     });
 </script>

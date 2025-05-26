@@ -9,11 +9,8 @@
 <body class="min-h-screen bg-white">
     <div class="flex min-h-screen flex-col md:flex-row">
         <!-- Left: Image Placeholder (hidden on mobile) -->
-        <div class="hidden md:flex w-1/2 bg-cover bg-center items-center justify-center" style="background-color: #f5f5f5;">
-            <!-- Placeholder for image, replace with your image -->
-            <div class="w-full h-full flex items-center justify-center">
-                <span class="text-gray-400 text-lg">[ Add your image here ]</span>
-            </div>
+        <div class="hidden md:flex w-1/2 relative bg-cover bg-center items-center justify-center" style="background-color: #f5f5f5;">
+            <img src="{{ asset('images/temple.png') }}" alt="Tapovan Paryushan Aradhana" class="absolute inset-0 w-full h-full object-cover rounded-l-2xl">
         </div>
         <!-- Right: Content -->
         <div class="w-full md:w-1/2 flex flex-col justify-center items-center bg-white py-8 md:py-0">
