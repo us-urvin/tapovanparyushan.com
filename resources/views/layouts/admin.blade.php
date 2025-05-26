@@ -12,10 +12,11 @@
         <!-- Sidebar -->
         <aside class="w-64 bg-[#F8F5ED] border-r border-[#E5E0D8] flex flex-col py-6 px-4">
             <div class="flex flex-col items-center mb-10">
-                <div class="h-16 w-16 bg-gray-200 rounded-full flex items-center justify-center mb-2">
+                {{-- <div class="h-16 w-16 bg-gray-200 rounded-full flex items-center justify-center mb-2">
                     <span class="text-gray-400">[Logo]</span>
-                </div>
-                <div class="text-xs text-[#1A2B49] font-bold text-center leading-tight">TAPOVAN PARYUSHAN<br>ARADHANA</div>
+                </div> --}}
+                {{-- <div class="text-xs text-[#1A2B49] font-bold text-center leading-tight">TAPOVAN PARYUSHAN<br>ARADHANA</div> --}}
+                <img src="{{ asset('images/logo.png') }}" alt="Tapovan Paryushan Aradhana" class="w-40 h-40">
             </div>
             <nav class="flex-1">
                 <ul class="space-y-2">
