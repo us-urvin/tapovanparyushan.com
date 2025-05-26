@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Admin Dashboard') | Tapovan Paryushan Aradhana</title>
     @vite('resources/css/app.css')
+    @stack('styles')
     <link rel="stylesheet" href="{{ asset('css/iziToast.min.css') }}">
 </head>
 <body class="bg-[#F8F5ED] min-h-screen">
@@ -27,7 +28,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="flex items-center px-4 py-2 rounded-lg font-semibold {{ request()->is('admin/sangh*') ? 'bg-[#F3E6C7] text-[#C9A14A]' : 'text-[#1A2B49] hover:bg-[#F3E6C7]' }}">
+                        <a href="{{ route('admin.sangh.index') }}" class="flex items-center px-4 py-2 rounded-lg font-semibold {{ request()->is('admin/sangh*') ? 'bg-[#F3E6C7] text-[#C9A14A]' : 'text-[#1A2B49] hover:bg-[#F3E6C7]' }}">
                             <svg class="w-5 h-5 mr-3 text-[#C9A14A]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
                             Sangh Profile
                         </a>
@@ -87,6 +88,7 @@
             </main>
         </div>
     </div>
+    @stack('scripts')
     <script src="{{ asset('js/iziToast.min.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {

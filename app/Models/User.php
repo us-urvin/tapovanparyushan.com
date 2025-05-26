@@ -9,11 +9,12 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable implements HasMedia
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles, InteractsWithMedia;
+    use HasFactory, Notifiable, HasRoles, InteractsWithMedia, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -28,6 +29,7 @@ class User extends Authenticatable implements HasMedia
         'shangh_address',
         'reason_note',
         'pincode',
+        'status',
     ];
 
     /**
