@@ -29,6 +29,7 @@ class User extends Authenticatable implements HasMedia
         'shangh_address',
         'reason_note',
         'pincode',
+        'mobile',
         'status',
     ];
 

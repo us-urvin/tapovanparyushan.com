@@ -21,6 +21,7 @@ return new class extends Migration
             $table->text('shangh_address')->nullable();
             $table->text('reason_note')->nullable();
             $table->string('pincode')->nullable();
+            $table->string('mobile')->nullable();
             $table->enum('status', ['pending', 'accepted', 'rejected'])->default('pending');
             $table->softDeletes();
             $table->rememberToken();

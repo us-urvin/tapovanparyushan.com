@@ -5,12 +5,15 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Auth\AdminProfileController;
 use App\Http\Controllers\Admin\SanghController;
+use App\Http\Controllers\Auth\LoginController;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::view('/login', 'auth.login')->name('login');
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login/check-pincode', [LoginController::class, 'checkPincode'])->name('login.check-pincode');
+Route::get('/otp-verify', [LoginController::class, 'showOtpForm'])->name('otp.verify');
 Route::get('/register', [RegisterController::class, 'show'])->name('register');
 Route::post('/register', [RegisterController::class, 'register'])->name('register.post');
 

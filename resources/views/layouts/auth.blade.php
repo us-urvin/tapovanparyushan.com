@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Auth | Tapovan Paryushan Aradhana</title>
     @vite('resources/css/app.css')
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body class="min-h-screen bg-white">
     <div class="flex min-h-screen flex-col md:flex-row">
@@ -28,5 +29,6 @@
             </div>
         </div>
     </div>
+    @stack('scripts')
 </body>
 </html> 
