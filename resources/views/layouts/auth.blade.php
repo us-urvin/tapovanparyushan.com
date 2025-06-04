@@ -6,6 +6,7 @@
     <title>Auth | Tapovan Paryushan Aradhana</title>
     @vite('resources/css/app.css')
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css">
 </head>
 <body class="min-h-screen bg-white">
     <div class="flex min-h-screen flex-col md:flex-row">
@@ -29,6 +30,56 @@
             </div>
         </div>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.min.js"></script>
     @stack('scripts')
+    <script>
+        @if(session('error'))
+            iziToast.error({
+                title: 'Error',
+                message: '{{ session('error') }}',
+                position: 'topRight',
+                timeout: 5000,
+                closeOnClick: true,
+                closeOnEscape: true,
+                displayMode: 'replace'
+            });
+        @endif
+
+        @if(session('success'))
+            iziToast.success({
+                title: 'Success',
+                message: '{{ session('success') }}',
+                position: 'topRight',
+                timeout: 5000,
+                closeOnClick: true,
+                closeOnEscape: true,
+                displayMode: 'replace'
+            });
+        @endif
+
+        @if(session('info'))
+            iziToast.info({
+                title: 'Info',
+                message: '{{ session('info') }}',
+                position: 'topRight',
+                timeout: 5000,
+                closeOnClick: true,
+                closeOnEscape: true,
+                displayMode: 'replace'
+            });
+        @endif
+
+        @if(session('warning'))
+            iziToast.warning({
+                title: 'Warning',
+                message: '{{ session('warning') }}',
+                position: 'topRight',
+                timeout: 5000,
+                closeOnClick: true,
+                closeOnEscape: true,
+                displayMode: 'replace'
+            });
+        @endif
+    </script>
 </body>
 </html> 

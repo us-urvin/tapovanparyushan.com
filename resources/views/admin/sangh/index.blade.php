@@ -108,7 +108,7 @@ $(function() {
             }
         },
         columns: [
-            { data: 'shangh_name', name: 'shangh_name' },
+            { data: 'sangh_name', name: 'sangh_name' },
             { data: 'email', name: 'email' },
             { data: 'name', name: 'name' },
             { data: 'pincode', name: 'pincode' },

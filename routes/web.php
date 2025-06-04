@@ -13,7 +13,9 @@ Route::get('/', function () {
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login/check-pincode', [LoginController::class, 'checkPincode'])->name('login.check-pincode');
+Route::post('/login/send-otp', [LoginController::class, 'sendOtp'])->name('login.send-otp');
 Route::get('/otp-verify', [LoginController::class, 'showOtpForm'])->name('otp.verify');
+Route::post('/otp-verify', [LoginController::class, 'verifyOtp'])->name('otp.verify.post');
 Route::get('/register', [RegisterController::class, 'show'])->name('register');
 Route::post('/register', [RegisterController::class, 'register'])->name('register.post');
 

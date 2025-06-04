@@ -25,9 +25,6 @@ class User extends Authenticatable implements HasMedia
         'name',
         'email',
         'password',
-        'shangh_name',
-        'shangh_address',
-        'reason_note',
         'pincode',
         'mobile',
         'status',
@@ -60,5 +57,10 @@ class User extends Authenticatable implements HasMedia
     {
         $media = $this->getFirstMedia('profile');
         return $media ? $media->getUrl() : 'https://randomuser.me/api/portraits/men/32.jpg';
+    }
+
+    public function sangh()
+    {
+        return $this->hasOne(\App\Models\Sangh::class);
     }
 }
