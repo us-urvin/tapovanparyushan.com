@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Auth\AdminProfileController;
 use App\Http\Controllers\Admin\SanghController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\SanghProfileController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -40,4 +41,9 @@ Route::middleware(['auth'])->prefix('admin/sangh')->name('admin.sangh.')->group(
     Route::put('/{user}', [SanghController::class, 'update'])->name('update');
     Route::delete('/{user}', [SanghController::class, 'destroy'])->name('destroy');
     Route::post('/{user}/status', [SanghController::class, 'changeStatus'])->name('status');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/sangh/profile', [SanghProfileController::class, 'show'])->name('sangh.profile');
+    Route::get('/sangh/profile/edit', [App\Http\Controllers\SanghProfileController::class, 'edit'])->name('sangh.profile.edit');
 });

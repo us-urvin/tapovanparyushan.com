@@ -91,7 +91,7 @@ class LoginController extends Controller
         if (!Session::has('mobile_number')) {
             return redirect()->route('login')->with('error', 'Please enter your mobile number first.');
         }
-        $otp = Otp::where('mobile', Session::get('mobile_number'))->pluck('otp')->first();
+        $otp = Otp::where('mobile', Session::get('mobile_number'))->where('is_used', 0)->where('expires_at', '>', Carbon::now())->pluck('otp')->first();
         return view('auth.otp-verify')->with('temp_otp', $otp);
     }
 
@@ -143,7 +143,7 @@ class LoginController extends Controller
         if ($user) {
             // Log the user in
             Auth::login($user);
-            return redirect()->route('admin.dashboard');
+            return redirect()->route('sangh.profile');
         } else {
             // User needs to register
             return redirect()->route('register', ['mobile' => $mobileNumber]);
