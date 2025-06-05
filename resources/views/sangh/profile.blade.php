@@ -90,55 +90,73 @@
     <!-- Trustees Details -->
     <div class="bg-white rounded-lg shadow p-6 mb-4 border border-[#F3E6C7]">
         <div class="text-lg font-semibold mb-4">Trustee's Details</div>
-        <table class="w-full text-sm">
-            <thead>
-                <tr class="border-b">
-                    <th class="py-2 text-left text-gray-500 text-sm font-medium">First Name</th>
-                    <th class="py-2 text-left text-gray-500 text-sm font-medium">Surname</th>
-                    <th class="py-2 text-left text-gray-500 text-sm font-medium">Phone No.</th>
-                    <th class="py-2 text-left text-gray-500 text-sm font-medium">Position Held</th>
-                    <th class="py-2 text-left text-gray-500 text-sm font-medium">Email</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td class="text-black text-base font-semibold">{{ explode(' ', $user->name)[0] ?? '' }}</td>
-                    <td class="text-black text-base font-semibold">{{ explode(' ', $user->name)[1] ?? '' }}</td>
-                    <td class="text-black text-base font-semibold">{{ $user->mobile }}</td>
-                    <td class="text-black text-base font-semibold">Trustee</td>
-                    <td class="text-black text-base font-semibold">{{ $user->email }}</td>
-                </tr>
-            </tbody>
-        </table>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-[#F3E6C7]">
+                <thead class="bg-[#F8F5ED]">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">#</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">First Name</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Surname</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Phone No.</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Position Held</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-[#F3E6C7]">
+                    <tr class="hover:bg-[#F8F5ED] transition">
+                        <td class="px-4 py-3 text-sm text-gray-500">1</td>
+                        <td class="px-4 py-3 text-base font-semibold text-[#1A2B49]">{{ explode(' ', $user->name)[0] ?? '' }}</td>
+                        <td class="px-4 py-3 text-base font-semibold text-[#1A2B49]">{{ explode(' ', $user->name)[1] ?? '' }}</td>
+                        <td class="px-4 py-3 text-base font-semibold text-gray-700">{{ $user->mobile }}</td>
+                        <td class="px-4 py-3 text-base font-semibold text-gray-700">Trustee</td>
+                        <td class="px-4 py-3 text-base font-semibold text-gray-700 break-all">{{ $user->email }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- Age-wise Distribution Of Members -->
     <div class="bg-white rounded-lg shadow p-6 mb-4 border border-[#F3E6C7]">
         <div class="text-lg font-semibold mb-4">Age-wise Distribution Of Members</div>
-        <table class="w-full text-sm">
-            <thead>
-                <tr class="border-b">
-                    <th class="py-2 text-left text-gray-500 text-sm font-medium">No.</th>
-                    <th class="py-2 text-left text-gray-500 text-sm font-medium">Age Group</th>
-                    <th class="py-2 text-left text-gray-500 text-sm font-medium">No. Of Members</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr><td class="text-black text-base font-semibold">1</td><td class="text-black text-base font-semibold">0-20 YEARS</td><td class="text-black text-base font-semibold">{{ $sangh->members_0_20 ?? '0' }}</td></tr>
-                <tr><td class="text-black text-base font-semibold">2</td><td class="text-black text-base font-semibold">21-40 YEARS</td><td class="text-black text-base font-semibold">{{ $sangh->members_21_40 ?? '0' }}</td></tr>
-                <tr><td class="text-black text-base font-semibold">3</td><td class="text-black text-base font-semibold">41-60 YEARS</td><td class="text-black text-base font-semibold">{{ $sangh->members_41_60 ?? '0' }}</td></tr>
-                <tr><td class="text-black text-base font-semibold">4</td><td class="text-black text-base font-semibold">60 YEARS +</td><td class="text-black text-base font-semibold">{{ $sangh->members_60_plus ?? '0' }}</td></tr>
-                <tr><td class="text-black text-base font-semibold">5</td><td class="text-black text-base font-semibold">Total</td><td class="text-black text-base font-semibold">{{ ($sangh->members_0_20 ?? 0) + ($sangh->members_21_40 ?? 0) + ($sangh->members_41_60 ?? 0) + ($sangh->members_60_plus ?? 0) }}</td></tr>
-            </tbody>
-        </table>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+            <div class="bg-[#F8F5ED] rounded-lg p-4 flex flex-col items-center justify-center border border-[#F3E6C7]">
+                <div class="text-xs text-gray-500 font-medium mb-1">Members</div>
+                <div class="text-2xl font-bold text-[#C9A14A]">
+                    <!-- Make sure Font Awesome is included in your layout -->
+                    <i class="fas fa-users" style="color: #C9A14A; font-size: 1.75rem;"></i>
+                </div>
+            </div>
+            <div class="bg-[#F8F5ED] rounded-lg p-4 flex flex-col items-center border border-[#F3E6C7]">
+                <div class="text-xs text-gray-500 font-medium mb-1">0-20 YEARS</div>
+                <div class="text-2xl font-bold text-[#1A2B49]">{{ $sangh->members_0_20 ?? '0' }}</div>
+            </div>
+            <div class="bg-[#F8F5ED] rounded-lg p-4 flex flex-col items-center border border-[#F3E6C7]">
+                <div class="text-xs text-gray-500 font-medium mb-1">21-40 YEARS</div>
+                <div class="text-2xl font-bold text-[#1A2B49]">{{ $sangh->members_21_40 ?? '0' }}</div>
+            </div>
+            <div class="bg-[#F8F5ED] rounded-lg p-4 flex flex-col items-center border border-[#F3E6C7]">
+                <div class="text-xs text-gray-500 font-medium mb-1">41-60 YEARS</div>
+                <div class="text-2xl font-bold text-[#1A2B49]">{{ $sangh->members_41_60 ?? '0' }}</div>
+            </div>
+            <div class="bg-[#F8F5ED] rounded-lg p-4 flex flex-col items-center border border-[#F3E6C7]">
+                <div class="text-xs text-gray-500 font-medium mb-1">60 YEARS +</div>
+                <div class="text-2xl font-bold text-[#1A2B49]">{{ $sangh->members_60_plus ?? '0' }}</div>
+            </div>
+            <div class="bg-[#F8F5ED] rounded-lg p-4 flex flex-col items-center border border-[#F3E6C7]">
+                <div class="text-xs text-gray-500 font-medium mb-1">Total</div>
+                <div class="text-2xl font-bold text-[#1A2B49]">
+                    {{ ($sangh->members_0_20 ?? 0) + ($sangh->members_21_40 ?? 0) + ($sangh->members_41_60 ?? 0) + ($sangh->members_60_plus ?? 0) }}
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Pathshala and Other Sangh Information -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div class="bg-white rounded-lg shadow p-6 border border-[#F3E6C7]">
             <div class="text-lg font-semibold mb-4">Pathshala Information</div>
-            <div class="mb-2 text-gray-500 text-sm font-medium">Does shree sangh have pathshala? <span class="text-black text-base font-semibold">{{ $sangh->has_pathshala ? 'Yes' : 'No' }}</span></div>
-            @if($sangh->has_pathshala)
+            <div class="mb-2 text-gray-500 text-sm font-medium mb-4">Does shree sangh have pathshala? <span class="text-black text-base font-semibold">{{ $sangh->has_pathshala ? 'Yes' : 'No' }}</span></div>
             <div class="grid grid-cols-2 gap-2">
                 <div>
                     <div class="text-gray-500 text-sm font-medium mb-1">First Name</div>
@@ -157,16 +175,36 @@
                     <div class="text-black text-base font-semibold">{{ $sangh->pathshala_phone ?? 'Not specified' }}</div>
                 </div>
             </div>
-            @endif
         </div>
         <div class="bg-white rounded-lg shadow p-6 border border-[#F3E6C7]">
             <div class="text-lg font-semibold mb-4">Other Sangh Information</div>
-            <div class="mb-2 text-gray-500 text-sm font-medium">Is there any other jain sangh in your city / village? <span class="text-black text-base font-semibold">{{ $sangh->has_other_sangh ? 'Yes' : 'No' }}</span></div>
-            @if($sangh->has_other_sangh)
-            <div class="mb-2 text-gray-500 text-sm font-medium">Select any Particulars: <span class="text-black text-base font-semibold">{{ $sangh->other_sangh_type ?? 'Not specified' }}</span></div>
-            <div class="mb-2 text-gray-500 text-sm font-medium">No. Of Members: <span class="text-black text-base font-semibold">{{ $sangh->other_sangh_members ?? '0' }}</span></div>
-            <div class="text-gray-500 text-sm font-medium">No. Of Jain Families: <span class="text-black text-base font-semibold">{{ $sangh->other_sangh_families ?? '0' }}</span></div>
-            @endif
+            <div class="mb-2 text-gray-500 text-sm font-medium mb-4">Is there any other jain sangh in your city / village? <span class="text-black text-base font-semibold">{{ $sangh->has_other_sangh ? 'Yes' : 'No' }}</span></div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-[#F3E6C7]">
+                    <thead class="bg-[#F8F5ED]">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">#</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Particulars</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">No. Of Members</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">No. Of Jain Families</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-[#F3E6C7]">
+                        <tr class="hover:bg-[#F8F5ED] transition">
+                            <td class="px-4 py-3 text-sm text-gray-500">1</td>
+                            <td class="px-4 py-3 text-base font-semibold text-[#1A2B49]">Shree Jain Sangh A</td>
+                            <td class="px-4 py-3 text-base font-semibold text-gray-700">120</td>
+                            <td class="px-4 py-3 text-base font-semibold text-gray-700">35</td>
+                        </tr>
+                        <tr class="hover:bg-[#F8F5ED] transition">
+                            <td class="px-4 py-3 text-sm text-gray-500">2</td>
+                            <td class="px-4 py-3 text-base font-semibold text-[#1A2B49]">Shree Jain Sangh B</td>
+                            <td class="px-4 py-3 text-base font-semibold text-gray-700">80</td>
+                            <td class="px-4 py-3 text-base font-semibold text-gray-700">20</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
