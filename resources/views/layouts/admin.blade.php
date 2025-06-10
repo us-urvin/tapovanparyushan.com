@@ -97,9 +97,9 @@
                         </li>
                     @endif
                     <li>
-                        <a href="#" class="nav-item {{ request()->is('admin/events*') ? 'bg-[#F3E6C7] text-[#C9A14A]' : 'text-[#1A2B49]' }}">
-                            <i class="fas fa-calendar-alt nav-icon"></i>
-                            <span class="nav-text">Events</span>
+                        <a href="{{ route('admin.paryushan.events.index') }}" class="nav-item {{ request()->is('admin/paryushan/events*') ? 'bg-[#F3E6C7] text-[#C9A14A]' : 'text-[#1A2B49]' }}">
+                            <i class="fas fa-clipboard-list nav-icon"></i>
+                            <span class="nav-text">Apply for Paryushan</span>
                         </a>
                     </li>
                     <li>

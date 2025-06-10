@@ -49,3 +49,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/sangh/profile/edit', [SanghProfileController::class, 'edit'])->name('sangh.profile.edit');
     Route::post('/sangh', [SanghController::class, 'store'])->name('sangh.store');
 });
+
+Route::prefix('admin/paryushan')->name('admin.paryushan.')->middleware(['auth'])->group(function () {
+    Route::get('events', [App\Http\Controllers\Admin\ParyushanEventController::class, 'index'])->name('events.index');
+    Route::get('events/create', [App\Http\Controllers\Admin\ParyushanEventController::class, 'create'])->name('events.create');
+    Route::get('events/datatable', [App\Http\Controllers\Admin\ParyushanEventController::class, 'datatable'])->name('events.datatable');
+});
