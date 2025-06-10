@@ -9,7 +9,7 @@ class SanghProfileController extends Controller
     public function show()
     {
         $user = Auth::user();
-        $sangh = $user->sangh; // relationship
+        $sangh = $user->sangh->load('busTransportations', 'trainTransportations', 'otherSanghs', 'trustees'); 
         // Add more eager loads if needed
         return view('sangh.profile', compact('user', 'sangh'));
     }

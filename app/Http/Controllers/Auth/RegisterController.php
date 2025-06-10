@@ -23,21 +23,20 @@ class RegisterController extends Controller
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'pincode' => ['required', 'string', 'max:255'],
+            'pincode' => ['required', 'string', 'max:255', 'unique:users'],
             'sangh_name' => ['required', 'string', 'max:255'],
             'sangh_address' => ['required', 'string'],
             'name' => ['required', 'string', 'max:255'], // trustee name
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'reason_note' => ['nullable', 'string'],
             'document' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'mobile' => ['required', 'string', 'max:255', 'unique:users'],
         ]);
-
-        $mobile = request()->get('mobile');
 
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'mobile' => $mobile,
+            'mobile' => $validated['mobile'],
             'password' => Hash::make('password'),
             'pincode' => $validated['pincode'],
         ]);
@@ -49,14 +48,18 @@ class RegisterController extends Controller
             'status' => 'pending',
         ]);
 
+        $sangh->trustees()->create([
+            'first_name' => $validated['name'],
+            'phone' => $validated['mobile'],
+            'email' => $validated['email'],
+        ]);
+
         if ($request->hasFile('document')) {
             $folderName = strtolower(str_replace(' ', '_', $sangh->sangh_name));
             $sangh->addMedia($request->file('document'))
                 ->usingFileName($request->file('document')->getClientOriginalName())
-                ->toMediaCollection('documents', [
-                    'disk' => 'public',
-                    'directory' => 'sangh/' . $folderName
-                ]);
+                ->usingDisk('public')
+                ->toMediaCollection('documents', 'public', 'sangh/' . $folderName);
         }
         $user->assignRole('Shangh');
 

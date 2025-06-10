@@ -45,5 +45,6 @@ Route::middleware(['auth'])->prefix('admin/sangh')->name('admin.sangh.')->group(
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/sangh/profile', [SanghProfileController::class, 'show'])->name('sangh.profile');
-    Route::get('/sangh/profile/edit', [App\Http\Controllers\SanghProfileController::class, 'edit'])->name('sangh.profile.edit');
+    Route::get('/sangh/profile/edit', [SanghProfileController::class, 'edit'])->name('sangh.profile.edit');
+    Route::post('/sangh', [SanghController::class, 'store'])->name('sangh.store');
 });

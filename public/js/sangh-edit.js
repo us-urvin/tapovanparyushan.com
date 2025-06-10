@@ -9,18 +9,394 @@ class Stepper {
     init() {
         this.updateStepperUI();
         this.setupNavigationButtons();
+        this.setupStepClickHandlers();
+        this.setupFormValidation();
+    }
+
+    setupFormValidation() {
+        // Add input event listeners to clear errors when user starts typing
+        document.querySelectorAll('input:not([type="checkbox"]), select').forEach(input => {
+            input.addEventListener('input', () => {
+                this.clearError(input);
+            });
+        });
+    }
+
+    validateField(input) {
+        const value = input.value.trim();
+        let isValid = true;
+        let errorMessage = '';
+
+        // Check if required field is empty
+        if (input.hasAttribute('required') && !value) {
+            isValid = false;
+            errorMessage = 'This field is required';
+        }
+
+        // Validate based on input type and name
+        if (isValid && value) {
+            if (input.type === 'email') {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(value)) {
+                    isValid = false;
+                    errorMessage = 'Please enter a valid email address';
+                }
+            } else if (input.name.includes('phone') || input.name.includes('mobile')) {
+                const phoneRegex = /^\d{10}$/;
+                if (!phoneRegex.test(value)) {
+                    isValid = false;
+                    errorMessage = 'Please enter a valid 10-digit phone number';
+                }
+            } else if (input.name === 'pincode') {
+                const pincodeRegex = /^\d{6}$/;
+                if (!pincodeRegex.test(value)) {
+                    isValid = false;
+                    errorMessage = 'Please enter a valid 6-digit pincode';
+                }
+            }
+        }
+
+        return { isValid, errorMessage };
+    }
+
+    showError(input, message) {
+        input.classList.add('border-red-500');
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'text-red-500 text-xs mt-1';
+        errorDiv.textContent = message;
+        
+        // Remove any existing error message
+        const existingError = input.parentElement.querySelector('.text-red-500');
+        if (existingError) {
+            existingError.remove();
+        }
+        
+        input.parentElement.appendChild(errorDiv);
+    }
+
+    clearError(input) {
+        input.classList.remove('border-red-500');
+        const errorDiv = input.parentElement.querySelector('.text-red-500');
+        if (errorDiv) {
+            errorDiv.remove();
+        }
+    }
+
+    validateStep(stepNumber) {
+        const stepContent = document.querySelector(`.step-content[data-step="${stepNumber}"]`);
+        if (!stepContent) return true;
+
+        let isValid = true;
+        const inputs = stepContent.querySelectorAll('input:not([type="checkbox"]), select');
+        
+        inputs.forEach(input => {
+            this.clearError(input);
+            // Numeric and positive value validation for number inputs
+            if (input.type === 'number') {
+                const value = input.value.trim();
+                if (value !== '' && (!/^\d+$/.test(value) || parseInt(value) < 0)) {
+                    this.showError(input, 'Please enter a valid number');
+                    isValid = false;
+                    return;
+                }
+            }
+            const { isValid: fieldValid, errorMessage } = this.validateField(input);
+            
+            if (!fieldValid) {
+                this.showError(input, errorMessage);
+                isValid = false;
+            }
+        });
+
+        // Conditional validation for Teacher's Details if has_pathshala == 1
+        if (stepNumber === 2) {
+            const hasPathshala = stepContent.querySelector('select[name="has_pathshala"]');
+            if (hasPathshala && hasPathshala.value === '1') {
+                const teacherFields = [
+                    { name: 'pathshala_first_name', label: 'First name' },
+                    { name: 'pathshala_last_name', label: 'Last name' },
+                    { name: 'pathshala_email', label: 'Email Address', type: 'email' },
+                    { name: 'pathshala_phone', label: 'Phone Number', type: 'phone' }
+                ];
+                teacherFields.forEach(field => {
+                    const input = stepContent.querySelector(`[name="${field.name}"]`);
+                    if (input) {
+                        this.clearError(input);
+                        const value = input.value.trim();
+                        let valid = true;
+                        let message = '';
+                        if (!value) {
+                            valid = false;
+                            message = `This field is required`;
+                        } else if (field.type === 'email') {
+                            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                            if (!emailRegex.test(value)) {
+                                valid = false;
+                                message = 'Please enter a valid email address';
+                            }
+                        } else if (field.type === 'phone') {
+                            const phoneRegex = /^\d{10}$/;
+                            if (!phoneRegex.test(value)) {
+                                valid = false;
+                                message = 'Please enter a valid 10-digit phone number';
+                            }
+                        }
+                        if (!valid) {
+                            this.showError(input, message);
+                            isValid = false;
+                        }
+                    }
+                });
+            }
+
+            // Conditional validation for Other Sangh table if has_other_sangh == 1
+            const hasOtherSangh = stepContent.querySelector('select[name="has_other_sangh"]');
+            if (hasOtherSangh && hasOtherSangh.value === '1') {
+                const tbody = document.getElementById('otherSanghTbody');
+                let validRowFound = false;
+                if (tbody) {
+                    const rows = tbody.querySelectorAll('tr');
+                    rows.forEach(row => {
+                        const particulars = row.querySelector('select[name*="[particulars]"]');
+                        const familyCount = row.querySelector('input[name*="[family_count]"]');
+                        const memberCount = row.querySelector('input[name*="[member_count]"]');
+                        let rowValid = true;
+                        
+                        if (!particulars || particulars.value === '') rowValid = false;
+                        if (!familyCount || familyCount.value === '' || isNaN(familyCount.value) || parseInt(familyCount.value) < 0) rowValid = false;
+                        if (!memberCount || memberCount.value === '' || isNaN(memberCount.value) || parseInt(memberCount.value) < 0) rowValid = false;
+                        if (rowValid) validRowFound = true;
+                        // Show errors for invalid fields
+                        if (familyCount && (familyCount.value !== '' && (isNaN(familyCount.value) || parseInt(familyCount.value) < 0))) {
+                            this.showError(familyCount, 'Please enter a valid number');
+                            isValid = false;
+                        }
+                        if (memberCount && (memberCount.value !== '' && (isNaN(memberCount.value) || parseInt(memberCount.value) < 0))) {
+                            this.showError(memberCount, 'Please enter a valid number');
+                            isValid = false;
+                        }
+                    });
+                }
+                if (!validRowFound) {
+                    // Show a general error message (could highlight the first row)
+                    const tbody = document.getElementById('otherSanghTbody');
+                    if (tbody && tbody.querySelector('tr')) {
+                        const firstInput = tbody.querySelector('input, select');
+                        if (firstInput) {
+                            this.showError(firstInput, 'At least one valid details is required');
+                        }
+                    }
+                    isValid = false;
+                }
+            }
+
+            // Age-wise Distribution Of Members validation
+            const ageTable = document.getElementById('ageDistributionTable');
+            if (ageTable) {
+                const ageInputs = ageTable.querySelectorAll('input[name^="age_group["]:not([readonly])');
+                ageInputs.forEach(input => {
+                    this.clearError(input);
+                    const value = input.value.trim();
+                    if (value === '') {
+                        this.showError(input, 'This field is required');
+                        isValid = false;
+                    } else if (isNaN(value) || parseInt(value) < 0) {
+                        this.showError(input, 'Please enter a valid number');
+                        isValid = false;
+                    }
+                });
+            }
+        }
+
+        // Bus Transportation validation
+        if (stepNumber === 3) {
+            const busCheckbox = document.getElementById('bus_transportation');
+            if (busCheckbox && busCheckbox.checked) {
+                const tbody = document.getElementById('busTransportTbody');
+                let validRowFound = false;
+                if (tbody) {
+                    const rows = tbody.querySelectorAll('tr');
+                    rows.forEach(row => {
+                        const fromInput = row.querySelector('input[name*="[from]"]');
+                        const toInput = row.querySelector('input[name*="[to]"]');
+                        let rowValid = true;
+                        if (!fromInput || fromInput.value.trim() === '') rowValid = false;
+                        if (!toInput || toInput.value.trim() === '') rowValid = false;
+                        if (rowValid) validRowFound = true;
+                        if (fromInput && fromInput.value.trim() === '') {
+                            this.showError(fromInput, 'This field is required');
+                            isValid = false;
+                        }
+                        if (toInput && toInput.value.trim() === '') {
+                            this.showError(toInput, 'This field is required');
+                            isValid = false;
+                        }
+                    });
+                }
+                if (!validRowFound) {
+                    if (tbody && tbody.querySelector('input')) {
+                        this.showError(tbody.querySelector('input'), 'At least one valid details is required');
+                    }
+                    isValid = false;
+                }
+            }
+
+            // Train Transportation validation
+            const trainCheckbox = document.getElementById('train_transportation');
+            if (trainCheckbox && trainCheckbox.checked) {
+                const tbody = document.getElementById('trainTransportTbody');
+                let validRowFound = false;
+                if (tbody) {
+                    const rows = tbody.querySelectorAll('tr');
+                    rows.forEach(row => {
+                        const fromInput = row.querySelector('input[name*="[from]"]');
+                        const trainNameInput = row.querySelector('input[name*="[train_name]"]');
+                        const toInput = row.querySelector('input[name*="[to]"]');
+                        let rowValid = true;
+                        if (!fromInput || fromInput.value.trim() === '') rowValid = false;
+                        if (!trainNameInput || trainNameInput.value.trim() === '') rowValid = false;
+                        if (!toInput || toInput.value.trim() === '') rowValid = false;
+                        if (rowValid) validRowFound = true;
+                        if (fromInput && fromInput.value.trim() === '') {
+                            this.showError(fromInput, 'This field is required');
+                            isValid = false;
+                        }
+                        if (trainNameInput && trainNameInput.value.trim() === '') {
+                            this.showError(trainNameInput, 'This field is required');
+                            isValid = false;
+                        }
+                        if (toInput && toInput.value.trim() === '') {
+                            this.showError(toInput, 'This field is required');
+                            isValid = false;
+                        }
+                    });
+                }
+                if (!validRowFound) {
+                    if (tbody && tbody.querySelector('input')) {
+                        this.showError(tbody.querySelector('input'), 'At least one valid details is required');
+                    }
+                    isValid = false;
+                }
+            }
+        }
+
+        return isValid;
+    }
+
+    validateAllSteps() {
+        let isValid = true;
+        let firstInvalidStep = null;
+
+        // Remove error highlight from all steps
+        document.querySelectorAll('.stepper-step .step-circle').forEach(circle => {
+            circle.classList.remove('border-red-500', 'animate-pulse');
+        });
+
+        // Validate all steps to find errors
+        for (let i = 1; i <= this.totalSteps; i++) {
+            if (!this.validateStep(i)) {
+                isValid = false;
+                if (firstInvalidStep === null) {
+                    firstInvalidStep = i;
+                }
+            }
+        }
+
+        // If there are errors, redirect to the first step with errors
+        if (!isValid && firstInvalidStep !== null) {
+            // Hide all step contents
+            document.querySelectorAll('.step-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+
+            // Show the step with errors
+            const invalidStepContent = document.querySelector(`.step-content[data-step="${firstInvalidStep}"]`);
+            if (invalidStepContent) {
+                invalidStepContent.classList.remove('hidden');
+            }
+
+            // Update current step
+            this.currentStep = firstInvalidStep;
+
+            // Update stepper UI
+            this.updateStepperUI();
+
+            // Add error highlight to the step with error
+            const stepCircle = document.querySelector(`.stepper-step[data-step="${firstInvalidStep}"] .step-circle`);
+            if (stepCircle) {
+                stepCircle.classList.add('border-red-500', 'animate-pulse');
+            }
+
+            // Scroll to the first error
+            const firstError = document.querySelector('.border-red-500');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstError.focus();
+            }
+        }
+
+        return isValid;
+    }
+
+    setupStepClickHandlers() {
+        const steps = document.querySelectorAll('.stepper-step');
+        steps.forEach((step, index) => {
+            step.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const stepNumber = index + 1;
+                if (stepNumber <= this.currentStep + 1) {
+                    if (stepNumber === this.currentStep + 1) {
+                        if (!this.validateStep(this.currentStep)) {
+                            return false;
+                        }
+                    }
+                    this.goToStep(stepNumber);
+                }
+            });
+            step.style.cursor = 'pointer';
+        });
+    }
+
+    setupNavigationButtons() {
+        const prevButtons = document.querySelectorAll('.prev-step');
+        prevButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (this.currentStep > 1) {
+                    this.goToStep(this.currentStep - 1);
+                }
+            });
+        });
+
+        const nextButtons = document.querySelectorAll('.next-step');
+        nextButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (this.currentStep < this.totalSteps) {
+                    if (!this.validateStep(this.currentStep)) {
+                        return false;
+                    }
+                    this.goToStep(this.currentStep + 1);
+                }
+            });
+        });
     }
 
     updateStepperUI() {
-        const steps = document.querySelectorAll('.stepper-step');
-        steps.forEach((step, index) => {
-            const stepNumber = index + 1;
+        document.querySelectorAll('.stepper-step').forEach(step => {
+            const stepNumber = parseInt(step.getAttribute('data-step'));
             const stepCircle = step.querySelector('.step-circle');
             const stepText = step.querySelector('.step-text');
             const stepDot = step.querySelector('.step-circle .rounded-full');
             const stepLine = step.nextElementSibling && step.nextElementSibling.classList.contains('step-line')
                 ? step.nextElementSibling
                 : null;
+
+            // Remove any error styling
+            stepCircle.classList.remove('border-red-500', 'animate-pulse');
 
             if (stepNumber < this.currentStep) {
                 // Completed steps
@@ -77,101 +453,12 @@ class Stepper {
     }
 
     showStepContent(stepNumber) {
-        const stepContents = document.querySelectorAll('.step-content');
-        stepContents.forEach((content, index) => {
-            if (index + 1 === stepNumber) {
+        document.querySelectorAll('.step-content').forEach(content => {
+            if (parseInt(content.getAttribute('data-step')) === stepNumber) {
                 content.classList.remove('hidden');
             } else {
                 content.classList.add('hidden');
             }
-        });
-    }
-
-    setupNavigationButtons() {
-        const prevButtons = document.querySelectorAll('.prev-step');
-        prevButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                if (this.currentStep > 1) {
-                    this.goToStep(this.currentStep - 1);
-                }
-            });
-        });
-
-        const nextButtons = document.querySelectorAll('.next-step');
-        nextButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                if (this.currentStep < this.totalSteps) {
-                    // Validate current step before proceeding
-                    let stepContents = document.querySelectorAll('.step-content');
-                    let currentStepContent = stepContents[this.currentStep - 1];
-                    if (!currentStepContent) return;
-
-                    // Get all inputs in the current step
-                    let inputs = currentStepContent.querySelectorAll('input:not([type="checkbox"]), select, textarea');
-                    let isValid = true;
-                    let firstInvalidInput = null;
-
-                    // Check if pathshala is "No"
-                    const pathshalaSelect = currentStepContent.querySelector('.pathshala-select');
-                    const isPathshalaNo = pathshalaSelect && pathshalaSelect.value === 'No';
-
-                    // Check if other sangh exists is "No"
-                    const otherSanghSelect = currentStepContent.querySelector('.other-sangh-exists-select');
-                    const isOtherSanghNo = otherSanghSelect && otherSanghSelect.value === 'No';
-
-                    inputs.forEach(input => {
-                        // Skip validation for pathshala fields if "No" is selected
-                        if (isPathshalaNo && input.closest('#teachersDetailsSection')) {
-                            return;
-                        }
-
-                        // Skip validation for other sangh fields if "No" is selected
-                        if (isOtherSanghNo && input.closest('#otherSanghTableSection')) {
-                            return;
-                        }
-
-                        // Find the label for this input
-                        let label = currentStepContent.querySelector(`label[for="${input.id}"]`) || 
-                                    input.closest('div').querySelector('label');
-                        
-                        // Check if the label contains an asterisk
-                        let isRequired = label && label.innerHTML.includes('<span class="text-red-500">*</span>');
-                        
-                        // For table rows, check if the column header has an asterisk
-                        if (!isRequired && input.closest('td')) {
-                            let table = input.closest('table');
-                            let columnIndex = Array.from(input.closest('tr').children).indexOf(input.closest('td'));
-                            let headerCell = table.querySelector(`thead th:nth-child(${columnIndex + 1})`);
-                            if (headerCell && headerCell.innerHTML.includes('<span class="text-red-500">*</span>')) {
-                                isRequired = true;
-                            }
-                        }
-
-                        // Validate the input
-                        if (isRequired && !input.value.trim()) {
-                            isValid = false;
-                            input.classList.add('border-red-500');
-                            if (!firstInvalidInput) firstInvalidInput = input;
-                        } else {
-                            input.classList.remove('border-red-500');
-                        }
-                    });
-
-                    if (!isValid) {
-                        firstInvalidInput?.focus();
-                        return;
-                    }
-
-                    this.goToStep(this.currentStep + 1);
-                }
-            });
-        });
-
-        // Add input event listeners to remove red border when user starts typing
-        document.querySelectorAll('input:not([type="checkbox"]), select, textarea').forEach(input => {
-            input.addEventListener('input', () => {
-                input.classList.remove('border-red-500');
-            });
         });
     }
 }
@@ -179,32 +466,36 @@ class Stepper {
 // Trustees table functionality
 class TrusteesTable {
     constructor() {
-        this.trusteeIndex = 1;
+        this.trusteeIndex = 0;
         this.init();
     }
 
     init() {
         this.setupAddTrusteeButton();
         this.setupDeleteTrusteeButtons();
+        this.updateTrusteeRowNumbers();
     }
 
     setupAddTrusteeButton() {
-        const addButton = document.getElementById('addTrusteeBtn');
-        if (addButton) {
-            addButton.addEventListener('click', () => this.addTrusteeRow());
+        const addBtn = document.getElementById('addTrusteeBtn');
+        if (addBtn) {
+            addBtn.addEventListener('click', () => this.addTrusteeRow());
         }
     }
 
     setupDeleteTrusteeButtons() {
         const tbody = document.getElementById('trusteesTbody');
-        if (tbody) {
-            tbody.addEventListener('click', (e) => {
-                if (e.target.closest('.deleteTrusteeBtn')) {
-                    e.target.closest('tr').remove();
+        if (!tbody) return;
+
+        tbody.addEventListener('click', (e) => {
+            if (e.target.closest('.deleteTrusteeBtn')) {
+                const row = e.target.closest('tr');
+                if (row) {
+                    row.remove();
                     this.updateTrusteeRowNumbers();
                 }
-            });
-        }
+            }
+        });
     }
 
     addTrusteeRow() {
@@ -254,125 +545,309 @@ class TrusteesTable {
         rows.forEach((row, idx) => {
             const noCell = row.querySelector('td');
             if (noCell) noCell.textContent = idx + 1;
+            
+            // Update the array index in the name attributes
+            const inputs = row.querySelectorAll('input');
+            inputs.forEach(input => {
+                const name = input.getAttribute('name');
+                if (name) {
+                    input.setAttribute('name', name.replace(/trustees\[\d+\]/, `trustees[${idx}]`));
+                }
+            });
         });
     }
 }
 
-// Transportation Table Functionality for Step 3
-class TransportationTable {
+// Other Sangh Table Functionality
+class OtherSanghTable {
     constructor() {
-        this.busRowIndex = 1;
-        this.trainRowIndex = 1;
+        this.otherSanghIndex = 1;
         this.init();
     }
 
     init() {
-        this.setupAddBusRowButton();
-        this.setupDeleteBusRowButton();
-        this.setupAddTrainRowButton();
-        this.setupDeleteTrainRowButton();
-        this.setupEditBusRowButton();
-        this.setupEditTrainRowButton();
+        this.setupAddOtherSanghButton();
+        this.setupDeleteOtherSanghButtons();
+        this.setupOtherSanghToggle();
     }
 
-    setupAddBusRowButton() {
-        const addBtn = document.getElementById('addBusRowBtn');
-        const tbody = document.getElementById('busTransportTbody');
-        if (addBtn && tbody) {
-            addBtn.addEventListener('click', () => {
-                this.busRowIndex = tbody.querySelectorAll('tr').length + 1;
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="align-middle row-index px-2 py-1">${this.busRowIndex}</td>
-                    <td class="px-2 py-1"><input type="text" name="bus_from[]" class="bus-from-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium"></td>
-                    <td class="px-2 py-1"><input type="text" name="bus_to[]" class="bus-to-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium"></td>
-                    <td class="text-center px-2 py-1">
-                        <button type="button" class="deleteBusRowBtn text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-                this.updateRowIndexes(tbody);
-            });
+    setupAddOtherSanghButton() {
+        const addButton = document.getElementById('addOtherSanghRowBtn');
+        if (addButton) {
+            addButton.addEventListener('click', () => this.addOtherSanghRow());
         }
     }
 
-    setupDeleteBusRowButton() {
-        const tbody = document.getElementById('busTransportTbody');
+    setupDeleteOtherSanghButtons() {
+        const tbody = document.getElementById('otherSanghTbody');
         if (tbody) {
             tbody.addEventListener('click', (e) => {
-                if (e.target.closest('.deleteBusRowBtn')) {
+                if (e.target.closest('.deleteOtherSanghRowBtn')) {
                     e.target.closest('tr').remove();
-                    this.updateRowIndexes(tbody);
+                    this.updateOtherSanghRowNumbers();
                 }
             });
         }
     }
 
-    setupEditBusRowButton() {
+    setupOtherSanghToggle() {
+        const otherSanghExistsSelect = document.querySelector('.other-sangh-exists-select');
+        const otherSanghTableSection = document.getElementById('otherSanghTableSection');
+        if (otherSanghExistsSelect && otherSanghTableSection) {
+            function toggleOtherSanghTable() {
+                if (otherSanghExistsSelect.value === '1') {
+                    otherSanghTableSection.style.display = '';
+                } else {
+                    otherSanghTableSection.style.display = 'none';
+                }
+            }
+            otherSanghExistsSelect.addEventListener('change', toggleOtherSanghTable);
+            toggleOtherSanghTable();
+        }
+    }
+
+    addOtherSanghRow() {
+        const tbody = document.getElementById('otherSanghTbody');
+        if (!tbody) return;
+
+        // Create particulars options HTML
+        let particularsOptions = '';
+        if (window.PARTICULARS) {
+            for (const [key, value] of Object.entries(window.PARTICULARS)) {
+                particularsOptions += `<option value="${key}">${value}</option>`;
+            }
+        }
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="text-center align-middle px-2 py-1">${tbody.querySelectorAll('tr').length + 1}</td>
+            <td class="px-2 py-1">
+                <select name="other_sanghs[${this.otherSanghIndex}][particulars]" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium">
+                    ${particularsOptions}
+                </select>
+            </td>
+            <td class="px-2 py-1">
+                <input type="number" name="other_sanghs[${this.otherSanghIndex}][family_count]" placeholder="No. of members" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium">
+            </td>
+            <td class="px-2 py-1">
+                <input type="number" name="other_sanghs[${this.otherSanghIndex}][member_count]" placeholder="No. of jain families" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium">
+            </td>
+            <td class="text-center px-2 py-1">
+                <button type="button" class="deleteOtherSanghRowBtn text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
+            </td>
+        `;
+        tbody.appendChild(row);
+        this.otherSanghIndex++;
+        this.updateOtherSanghRowNumbers();
+    }
+
+    updateOtherSanghRowNumbers() {
+        const tbody = document.getElementById('otherSanghTbody');
+        if (!tbody) return;
+        const rows = tbody.querySelectorAll('tr');
+        rows.forEach((row, idx) => {
+            const noCell = row.querySelector('td');
+            if (noCell) noCell.textContent = idx + 1;
+            
+            // Update the array index in the name attributes
+            const particularsSelect = row.querySelector('select[name^="other_sanghs["]');
+            const membersInput = row.querySelector('input[name^="other_sanghs["][name$="[no_of_members]"]');
+            const familiesInput = row.querySelector('input[name^="other_sanghs["][name$="[no_of_jain_families]"]');
+            
+            if (particularsSelect) particularsSelect.name = `other_sanghs[${idx}][particulars]`;
+            if (membersInput) membersInput.name = `other_sanghs[${idx}][no_of_members]`;
+            if (familiesInput) familiesInput.name = `other_sanghs[${idx}][no_of_jain_families]`;
+        });
+    }
+}
+
+// Bus Transportation Table Functionality
+class BusTransportTable {
+    constructor() {
+        this.init();
+    }
+
+    init() {
+        this.setupAddBusButton();
+        this.setupDeleteBusButtons();
+        this.setupBusToggle();
+    }
+
+    setupAddBusButton() {
+        const addBtn = document.getElementById('addBusRowBtn');
+        if (addBtn) {
+            addBtn.addEventListener('click', () => this.addBusRow());
+        }
+    }
+
+    setupDeleteBusButtons() {
         const tbody = document.getElementById('busTransportTbody');
-        if (tbody) {
-            tbody.addEventListener('click', (e) => {
-                if (e.target.closest('.editBusRowBtn')) {
-                    const tr = e.target.closest('tr');
-                    const inputs = tr.querySelectorAll('input[type="text"]');
-                    inputs.forEach(input => input.focus());
+        if (!tbody) return;
+
+        tbody.addEventListener('click', (e) => {
+            if (e.target.closest('.deleteBusRowBtn')) {
+                const row = e.target.closest('tr');
+                if (row) {
+                    row.remove();
+                    this.updateBusRowNumbers();
                 }
-            });
+            }
+        });
+    }
+
+    setupBusToggle() {
+        const busCheckbox = document.getElementById('bus_transportation');
+        const busTable = document.getElementById('busTransportTbody');
+        if (!busCheckbox || !busTable) return;
+
+        const toggleBusTable = () => {
+            if (busCheckbox.checked) {
+                busTable.closest('.overflow-x-auto').style.display = 'block';
+                document.getElementById('addBusRowBtn').style.display = 'flex';
+            } else {
+                busTable.closest('.overflow-x-auto').style.display = 'none';
+                document.getElementById('addBusRowBtn').style.display = 'none';
+            }
+        };
+
+        busCheckbox.addEventListener('change', toggleBusTable);
+        toggleBusTable(); // Initial state
+    }
+
+    addBusRow() {
+        const tbody = document.getElementById('busTransportTbody');
+        if (!tbody) return;
+
+        var count = tbody.querySelectorAll('tr').length;
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="align-middle row-index px-2 py-1">${count + 1}</td>
+            <td class="px-2 py-1">
+                <input type="text" name="bus_transport[${count}][from]" class="bus-from-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium">
+            </td>
+            <td class="px-2 py-1">
+                <input type="text" name="bus_transport[${count}][to]" class="bus-to-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium">
+            </td>
+            <td class="text-center px-2 py-1">
+                <button type="button" class="deleteBusRowBtn text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
+            </td>
+        `;
+        tbody.appendChild(row);
+        this.updateBusRowNumbers();
+    }
+
+    updateBusRowNumbers() {
+        const tbody = document.getElementById('busTransportTbody');
+        if (!tbody) return;
+        const rows = tbody.querySelectorAll('tr');
+        rows.forEach((row, idx) => {
+            const noCell = row.querySelector('td');
+            if (noCell) noCell.textContent = idx + 1;
+            
+            // Update the array index in the name attributes
+            const fromInput = row.querySelector('input[name^="bus_transport["][name$="[from]"]');
+            const toInput = row.querySelector('input[name^="bus_transport["][name$="[to]"]');
+            
+            if (fromInput) fromInput.name = `bus_transport[${idx}][from]`;
+            if (toInput) toInput.name = `bus_transport[${idx}][to]`;
+        });
+    }
+}
+
+// Train Transportation Table Functionality
+class TrainTransportTable {
+    constructor() {
+        this.trainIndex = 1;
+        this.init();
+    }
+
+    init() {
+        this.setupAddTrainButton();
+        this.setupDeleteTrainButtons();
+        this.setupTrainToggle();
+    }
+
+    setupAddTrainButton() {
+        const addButton = document.getElementById('addTrainRowBtn');
+        if (addButton) {
+            addButton.addEventListener('click', () => this.addTrainRow());
         }
     }
 
-    setupAddTrainRowButton() {
-        const addBtn = document.getElementById('addTrainRowBtn');
-        const tbody = document.getElementById('trainTransportTbody');
-        if (addBtn && tbody) {
-            addBtn.addEventListener('click', () => {
-                this.trainRowIndex = tbody.querySelectorAll('tr').length + 1;
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="align-middle row-index px-2 py-1">${this.trainRowIndex}</td>
-                    <td class="px-2 py-1"><input type="text" name="train_from[]" class="train-from-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium"></td>
-                    <td class="px-2 py-1"><input type="text" name="train_name[]" class="train-name-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium"></td>
-                    <td class="px-2 py-1"><input type="text" name="train_to[]" class="train-to-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium"></td>
-                    <td class="text-center px-2 py-1">
-                        <button type="button" class="deleteTrainRowBtn text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-                this.updateRowIndexes(tbody);
-            });
-        }
-    }
-
-    setupDeleteTrainRowButton() {
+    setupDeleteTrainButtons() {
         const tbody = document.getElementById('trainTransportTbody');
         if (tbody) {
             tbody.addEventListener('click', (e) => {
                 if (e.target.closest('.deleteTrainRowBtn')) {
                     e.target.closest('tr').remove();
-                    this.updateRowIndexes(tbody);
+                    this.updateTrainRowNumbers();
                 }
             });
         }
     }
 
-    setupEditTrainRowButton() {
+    setupTrainToggle() {
+        const trainTransportCheckbox = document.getElementById('train_transportation');
+        const trainTableSection = document.getElementById('trainTransportTbody').closest('.overflow-x-auto');
+        const addTrainButton = document.getElementById('addTrainRowBtn');
+        
+        if (trainTransportCheckbox && trainTableSection) {
+            const toggleTrainTable = () => {
+                if (trainTransportCheckbox.checked) {
+                    trainTableSection.style.display = '';
+                    if (addTrainButton) addTrainButton.style.display = '';
+                } else {
+                    trainTableSection.style.display = 'none';
+                    if (addTrainButton) addTrainButton.style.display = 'none';
+                }
+            };
+            
+            trainTransportCheckbox.addEventListener('change', toggleTrainTable);
+            toggleTrainTable(); // Set initial state
+        }
+    }
+
+    addTrainRow() {
         const tbody = document.getElementById('trainTransportTbody');
-        if (tbody) {
-            tbody.addEventListener('click', (e) => {
-                if (e.target.closest('.editTrainRowBtn')) {
-                    const tr = e.target.closest('tr');
-                    const inputs = tr.querySelectorAll('input[type="text"]');
-                    inputs.forEach(input => input.focus());
-                }
-            });
-        }
+        if (!tbody) return;
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="align-middle row-index px-2 py-1">${tbody.querySelectorAll('tr').length + 1}</td>
+            <td class="px-2 py-1">
+                <input type="text" name="train_transport[${this.trainIndex}][from]" class="train-from-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium">
+            </td>
+            <td class="px-2 py-1">
+                <input type="text" name="train_transport[${this.trainIndex}][train_name]" class="train-name-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium">
+            </td>
+            <td class="px-2 py-1">
+                <input type="text" name="train_transport[${this.trainIndex}][to]" class="train-to-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium">
+            </td>
+            <td class="text-center px-2 py-1">
+                <button type="button" class="deleteTrainRowBtn text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
+            </td>
+        `;
+        tbody.appendChild(row);
+        this.trainIndex++;
+        this.updateTrainRowNumbers();
     }
 
-    updateRowIndexes(tbody) {
+    updateTrainRowNumbers() {
+        const tbody = document.getElementById('trainTransportTbody');
+        if (!tbody) return;
         const rows = tbody.querySelectorAll('tr');
         rows.forEach((row, idx) => {
-            const indexCell = row.querySelector('.row-index');
-            if (indexCell) indexCell.textContent = idx + 1;
+            const noCell = row.querySelector('td');
+            if (noCell) noCell.textContent = idx + 1;
+            
+            // Update the array index in the name attributes
+            const fromInput = row.querySelector('input[name^="train_transport["][name$="[from]"]');
+            const nameInput = row.querySelector('input[name^="train_transport["][name$="[train_name]"]');
+            const toInput = row.querySelector('input[name^="train_transport["][name$="[to]"]');
+            
+            if (fromInput) fromInput.name = `train_transport[${idx}][from]`;
+            if (nameInput) nameInput.name = `train_transport[${idx}][train_name]`;
+            if (toInput) toInput.name = `train_transport[${idx}][to]`;
         });
     }
 }
@@ -385,8 +860,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize trustees table
     const trusteesTable = new TrusteesTable();
 
-    // Initialize transportation table for step 3
-    new TransportationTable();
+    // Initialize other sangh table
+    const otherSanghTable = new OtherSanghTable();
+
+    // Initialize bus transport table
+    const busTransportTable = new BusTransportTable();
+
+    // Initialize train transport table
+    const trainTransportTable = new TrainTransportTable();
 
     // Age-wise Distribution Of Members total calculation
     const ageTable = document.getElementById('ageDistributionTable');
@@ -444,7 +925,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const teachersDetailsSection = document.getElementById('teachersDetailsSection');
     if (pathshalaSelect && teachersDetailsSection) {
         function toggleTeachersDetails() {
-            if (pathshalaSelect.value === 'Yes') {
+            if (pathshalaSelect.value === '1') {
                 teachersDetailsSection.style.display = '';
             } else {
                 teachersDetailsSection.style.display = 'none';
@@ -455,61 +936,26 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleTeachersDetails();
     }
 
-    // Other Sangh Information add/delete row functionality
-    const otherSanghTbody = document.getElementById('otherSanghTbody');
-    const addOtherSanghRowBtn = document.getElementById('addOtherSanghRowBtn');
-    if (otherSanghTbody && addOtherSanghRowBtn) {
-        addOtherSanghRowBtn.addEventListener('click', () => {
-            const rowCount = otherSanghTbody.querySelectorAll('tr').length + 1;
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td class="text-center align-middle px-2 py-1">${rowCount}</td>
-                <td class="px-2 py-1">
-                    <select name="other_sangh_particulars[]" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium">
-                        <option value="Shanahavaksi">Shanahavaksi</option>
-                    </select>
-                </td>
-                <td class="px-2 py-1">
-                    <input type="number" name="other_sangh_family_count[]" placeholder="No. of jain families" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium">
-                </td>
-                <td class="px-2 py-1">
-                    <input type="number" name="other_sangh_member_count[]" placeholder="No. of members" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium">
-                </td>
-                <td class="text-center px-2 py-1">
-                    <button type="button" class="deleteOtherSanghRowBtn text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
-                </td>
-            `;
-            otherSanghTbody.appendChild(row);
-            updateOtherSanghRowNumbers();
-        });
-        otherSanghTbody.addEventListener('click', (e) => {
-            if (e.target.closest('.deleteOtherSanghRowBtn')) {
-                e.target.closest('tr').remove();
-                updateOtherSanghRowNumbers();
+    // Form submission
+    const form = document.getElementById('sanghForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validate all steps before submission
+            if (!stepper.validateAllSteps()) {
+                return false;
             }
-        });
-        function updateOtherSanghRowNumbers() {
-            const rows = otherSanghTbody.querySelectorAll('tr');
-            rows.forEach((row, idx) => {
-                const noCell = row.querySelector('td');
-                if (noCell) noCell.textContent = idx + 1;
-            });
-        }
-    }
 
-    // Other Sangh Information show/hide table based on dropdown
-    const otherSanghExistsSelect = document.querySelector('.other-sangh-exists-select');
-    const otherSanghTableSection = document.getElementById('otherSanghTableSection');
-    if (otherSanghExistsSelect && otherSanghTableSection) {
-        function toggleOtherSanghTable() {
-            if (otherSanghExistsSelect.value === 'Yes') {
-                otherSanghTableSection.style.display = '';
-            } else {
-                otherSanghTableSection.style.display = 'none';
+            const saveBtn = document.getElementById('saveBtn');
+            const saveBtnLoader = document.getElementById('saveBtnLoader');
+
+            if (saveBtn && saveBtnLoader) {
+                saveBtnLoader.classList.remove('hidden');
+                saveBtn.textContent = 'Sending...';
             }
-        }
-        otherSanghExistsSelect.addEventListener('change', toggleOtherSanghTable);
-        // Set initial state
-        toggleOtherSanghTable();
+            
+            this.submit();
+        });
     }
-}); 
+});

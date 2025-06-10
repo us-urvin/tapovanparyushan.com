@@ -5,15 +5,17 @@
 <form method="POST" action="{{ route('register.post') }}" id="registerForm" enctype="multipart/form-data">
     @csrf
     <div class="mb-4">
-        <label class="block text-gray-700 mb-1">Shangh Name <span class="text-red-500">*</span></label>
-        <input name="sangh_name" value="{{ old('sangh_name') }}" type="text" class="w-full border {{ $errors->has('sangh_name') ? 'border-red-500' : 'border-gray-300' }} rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#C9A14A] placeholder:text-gray-400" placeholder="Enter your Shangh name" data-error="shangh_name_error">
+        <label class="block text-gray-700 mb-1">Sangh Name <span class="text-red-500">*</span></label>
+        <input name="sangh_name" value="{{ old('sangh_name') }}" type="text" 
+        class="w-full border {{ $errors->has('sangh_name') ? 'border-red-500' : 'border-gray-300' }} rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#C9A14A] placeholder:text-gray-400" placeholder="Enter your Sangh name" data-error="shangh_name_error">
         @error('sangh_name')
             <div class="text-red-600 text-xs mt-1 error-message" id="shangh_name_error">{{ $message }}</div>
         @enderror
     </div>
     <div class="mb-4">
-        <label class="block text-gray-700 mb-1">Enter Address of Shangh <span class="text-red-500">*</span></label>
-        <textarea name="sangh_address" class="w-full border {{ $errors->has('sangh_address') ? 'border-red-500' : 'border-gray-300' }} rounded-lg px-4 py-2 h-24 focus:outline-none focus:ring-2 focus:ring-[#C9A14A] placeholder:text-gray-400" placeholder="Enter address of shangh..." data-error="shangh_address_error">{{ old('sangh_address') }}</textarea>
+        <label class="block text-gray-700 mb-1">Enter Address of Sangh <span class="text-red-500">*</span></label>
+        <textarea name="sangh_address" 
+        class="w-full border {{ $errors->has('sangh_address') ? 'border-red-500' : 'border-gray-300' }} rounded-lg px-4 py-2 h-24 focus:outline-none focus:ring-2 focus:ring-[#C9A14A] placeholder:text-gray-400" placeholder="Enter address of sangh..." data-error="sangh_address_error">{{ old('sangh_address') }}</textarea>
         @error('sangh_address')
             <div class="text-red-600 text-xs mt-1 error-message" id="shangh_address_error">{{ $message }}</div>
         @enderror
@@ -57,6 +59,7 @@
             <input type="file" name="document" class="hidden" />
         </label>
     </div>
+    <input type="hidden" name="mobile" value="{{ request()->get('mobile') }}">
     <button id="registerBtn" type="submit" class="w-full bg-[#C9A14A] text-white py-2 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-[#b38e3c] transition mb-4">
         <span id="registerBtnText">Submit</span>
         <svg id="registerBtnLoader" class="w-5 h-5 animate-spin hidden" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="#fff" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>

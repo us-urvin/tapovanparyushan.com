@@ -46,6 +46,12 @@ class LoginHandler {
         }, 300);
     }
 
+    maskEmail(email) {
+        const [username, domain] = email.split('@');
+        const maskedUsername = username.charAt(0) + '*'.repeat(username.length - 1);
+        return `${maskedUsername}@${domain}`;
+    }
+
     async checkPincode(pincode) {
         try {
             const response = await fetch('/login/check-pincode', {
@@ -63,7 +69,7 @@ class LoginHandler {
                 // Show user info
                 document.getElementById('shanghName').textContent = data.data.sangh_name;
                 document.getElementById('trusteeName').textContent = data.data.trustee_name;
-                document.getElementById('email').textContent = data.data.email;
+                document.getElementById('email').textContent = this.maskEmail(data.data.email);
                 this.mobileInput.value = data.data.mobile;
                 this.userInfo.classList.remove('hidden');
             } else {
