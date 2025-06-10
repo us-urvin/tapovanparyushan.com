@@ -39,9 +39,14 @@ class AdminLoginController extends Controller
 
     public function logout(Request $request)
     {
+        if (Auth::user()->hasRole('Admin')) {
+            $url = redirect()->route('admin.login');
+        } else {
+            $url = redirect()->route('login');
+        }
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect()->route('admin.login');
+        return $url;
     }
 }

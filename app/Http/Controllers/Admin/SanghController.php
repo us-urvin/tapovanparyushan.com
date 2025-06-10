@@ -9,8 +9,10 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\Facades\DataTables;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class SanghController extends Controller
 {
@@ -55,7 +57,9 @@ class SanghController extends Controller
      */
     public function create()
     {
-        //
+        $user = new \App\Models\User();
+        $sangh = new \App\Models\Sangh();
+        return view('sangh.edit', compact('user', 'sangh'));
     }
 
     /**
@@ -70,7 +74,7 @@ class SanghController extends Controller
             DB::beginTransaction();
 
             // Check if sangh exists for current user
-            $sangh = Sangh::where('user_id', Auth::id())->first();
+            $sangh = Sangh::where('id', $request->sangh_id)->first();
 
             if ($sangh) {
                 // Update existing sangh
@@ -108,9 +112,20 @@ class SanghController extends Controller
                 $sangh->busTransportations()->delete();
                 $sangh->trainTransportations()->delete();
             } else {
+                $user = User::create([
+                    'name' => $request->trustees[0]['first_name'] . ' ' . $request->trustees[0]['surname'],
+                    'email' => $request->trustees[0]['email'],
+                    'mobile' => $request->trustees[0]['phone'],
+                    'pincode' => $request->pincode,
+                    'password' => Hash::make('password'),
+                    'status' => 'pending',
+                ]);
+
+                $user->assignRole('Shangh');
+                
                 // Create new sangh
                 $sangh = Sangh::create([
-                    'user_id' => Auth::id(),
+                    'user_id' => $user->id,
                     'sangh_name' => $request->sangh_name,
                     'sangh_type' => $request->sangh_type,
                     'sangh_email' => $request->sangh_email,
@@ -136,7 +151,6 @@ class SanghController extends Controller
                     'train_transportation' => $request->train_transportation == 'on' ? 1 : 0,
                     'sangh_address' => $request->sangh_address ?? '',
                     'reason_note' => $request->reason_note ?? '',
-                    'status' => 'pending',
                 ]);
             }
 
@@ -151,11 +165,12 @@ class SanghController extends Controller
                 ]);
 
                 if ($key == 0) {
-                    $authUser = User::find(Auth::id());  
-                    $authUser->mobile = $trustee['phone'];
-                    $authUser->email = $trustee['email'];
-                    $authUser->name = $trustee['first_name'] . ' ' . $trustee['surname'];
-                    $authUser->save();
+                    $sangh->user->update([  
+                        'mobile' => $trustee['phone'],
+                        'email' => $trustee['email'],
+                        'name' => $trustee['first_name'] . ' ' . $trustee['surname'],
+                        'pincode' => $request->pincode,
+                    ]);
                 }
             }
 
@@ -232,11 +247,15 @@ class SanghController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified resource from storage (soft delete user and sangh).
      */
-    public function destroy(string $id)
+    public function destroy(User $user)
     {
-        //
+        if ($user->sangh) {
+            $user->sangh->delete();
+        }
+        $user->delete();
+        return response()->json(['success' => true]);
     }
 
     /**
@@ -252,5 +271,35 @@ class SanghController extends Controller
         $user->save();
 
         return response()->json(['success' => true, 'status' => $user->status]);
+    }
+
+    /**
+     * Admin view of a sangh profile.
+     */
+    public function adminView(User $user)
+    {
+        $sangh = $user->sangh;
+        // You can eager load more relations if needed
+        return view('admin.sangh.view', compact('user', 'sangh'));
+    }
+
+    /**
+     * Admin edit of a sangh profile.
+     */
+    public function adminEdit(User $user)
+    {
+        $sangh = $user->sangh;
+        // Load any relations as needed
+        return view('sangh.edit', compact('user', 'sangh'));
+    }
+
+    /**
+     * Download Sangh details as PDF.
+     */
+    public function downloadPdf(User $user)
+    {
+        $sangh = $user->sangh;
+        $pdf = Pdf::loadView('admin.sangh.pdf', compact('user', 'sangh'));
+        return $pdf->download('sangh-profile-' . $user->id . '.pdf');
     }
 }

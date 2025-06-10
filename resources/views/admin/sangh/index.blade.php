@@ -8,9 +8,9 @@
     <div class="text-2xl font-semibold text-[#1A2B49]">Sangh Profile
         <span class="ml-2 bg-[#F3E6C7] text-[#C9A14A] text-xs font-semibold px-3 py-1 rounded" id="sanghCount"></span>
     </div>
-    <button id="addSanghBtn" class="bg-[#C9A14A] text-white font-semibold px-6 py-2 rounded-lg flex items-center gap-2 hover:bg-[#b38e3c] transition">
+    <a href="{{ route('admin.sangh.create') }}" id="addSanghBtn" class="bg-[#C9A14A] text-white font-semibold px-6 py-2 rounded-lg flex items-center gap-2 hover:bg-[#b38e3c] transition">
         <span>+ Add Sangh Profile</span>
-    </button>
+    </a>
 </div>
 <div class="bg-white rounded-lg shadow p-6">
     <div class="mb-4 flex justify-between items-center">
@@ -96,6 +96,7 @@
 @push('scripts')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/izitoast/dist/js/iziToast.min.js"></script>
 <script>
 $(function() {
     var table = $('#sanghTable').DataTable({
@@ -144,20 +145,37 @@ $(function() {
     });
     $(document).on('click', '.deleteSanghBtn', function() {
         var userId = $(this).data('user-id');
-        if (confirm('Are you sure you want to delete this Sangh?')) {
-            $.ajax({
-                url: '/admin/sangh/' + userId,
-                type: 'DELETE',
-                data: { _token: '{{ csrf_token() }}' },
-                success: function(res) {
-                    iziToast.success({ title: 'Deleted', message: 'Sangh deleted.' });
-                    table.ajax.reload(null, false);
-                },
-                error: function() {
-                    iziToast.error({ title: 'Error', message: 'Failed to delete.' });
-                }
-            });
-        }
+        iziToast.question({
+            timeout: 20000,
+            close: false,
+            overlay: true,
+            displayMode: 'once',
+            id: 'question',
+            zindex: 999,
+            title: 'Delete Confirmation',
+            message: 'Are you sure you want to delete this Sangh?',
+            position: 'center',
+            buttons: [
+                ['<button><b>YES</b></button>', function (instance, toast) {
+                    $.ajax({
+                        url: '/admin/sangh/' + userId,
+                        type: 'DELETE',
+                        data: { _token: '{{ csrf_token() }}' },
+                        success: function(res) {
+                            iziToast.success({ title: 'Deleted', message: 'Sangh deleted successfully.' });
+                            $('#sanghTable').DataTable().ajax.reload(null, false);
+                        },
+                        error: function() {
+                            iziToast.error({ title: 'Error', message: 'Failed to delete Sangh.' });
+                        }
+                    });
+                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                }, true],
+                ['<button>Cancel</button>', function (instance, toast) {
+                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                }]
+            ]
+        });
     });
     $(document).on('click', '.editSanghBtn', function() {
         var userId = $(this).data('user-id');

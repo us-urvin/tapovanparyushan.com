@@ -37,10 +37,11 @@ Route::middleware(['auth'])->prefix('admin/sangh')->name('admin.sangh.')->group(
     Route::get('/datatable', [SanghController::class, 'datatable'])->name('datatable');
     Route::get('/create', [SanghController::class, 'create'])->name('create');
     Route::post('/', [SanghController::class, 'store'])->name('store');
-    Route::get('/{user}/edit', [SanghController::class, 'edit'])->name('edit');
-    Route::put('/{user}', [SanghController::class, 'update'])->name('update');
+    Route::get('/{user}/edit', [SanghController::class, 'adminEdit'])->name('edit');
     Route::delete('/{user}', [SanghController::class, 'destroy'])->name('destroy');
     Route::post('/{user}/status', [SanghController::class, 'changeStatus'])->name('status');
+    Route::get('/{user}/view', [SanghController::class, 'adminView'])->name('view');
+    Route::get('/{user}/download-pdf', [SanghController::class, 'downloadPdf'])->name('downloadPdf');
 });
 
 Route::middleware(['auth'])->group(function () {

@@ -56,7 +56,7 @@ class LoginController extends Controller
     public function sendOtp(Request $request)
     {
         $request->validate([
-            'mobile' => 'required|string|regex:/^[6-9]\d{9}$/'
+            'mobile' => 'required|string|regex:/^\d{10}$/'
         ]);
 
         $user = User::where('mobile', $request->mobile)->first();

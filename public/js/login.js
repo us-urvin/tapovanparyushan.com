@@ -25,8 +25,8 @@ class LoginHandler {
     }
 
     validateMobileNumber(mobile) {
-        // Indian mobile number validation (10 digits starting with 6-9)
-        const mobileRegex = /^[6-9]\d{9}$/;
+        // Indian mobile number validation (10 digits)
+        const mobileRegex = /^\d{10}$/;
         return mobileRegex.test(mobile);
     }
 
