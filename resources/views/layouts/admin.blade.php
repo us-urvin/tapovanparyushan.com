@@ -125,16 +125,17 @@
                         </li>
                     @endif
                 </ul>
-                <div class="mt-auto pt-8">
-                    <form method="POST" action="{{ route('admin.logout') }}">
-                        @csrf
-                        <button type="submit" class="nav-item w-full text-left">
-                            <i class="fas fa-sign-out-alt nav-icon"></i>
-                            <span class="nav-text">Logout</span>
-                        </button>
-                    </form>
-                </div>
             </nav>
+            <!-- Logout Section -->
+            <div class="mt-auto border-t border-[#E5E0D8] pt-4">
+                <form method="POST" action="{{ route('admin.logout') }}">
+                    @csrf
+                    <button type="submit" class="nav-item w-full text-left text-[#C9A14A] hover:bg-[#F3E6C7]">
+                        <i class="fas fa-sign-out-alt nav-icon"></i>
+                        <span class="nav-text">Logout</span>
+                    </button>
+                </form>
+            </div>
         </aside>
 
         <!-- Main Content Area -->
