@@ -10,23 +10,45 @@
         <span class="ml-2 bg-[#F3E6C7] text-[#C9A14A] text-xs font-semibold px-3 py-1 rounded" id="eventCount"></span>
     </div>
     <div class="flex gap-2">
-        <button class="flex items-center gap-2 border border-[#C9A14A] text-[#C9A14A] font-semibold px-4 py-2 rounded-lg hover:bg-[#F3E6C7] transition">
+        <button id="filterBtn" class="flex items-center gap-2 border border-[#C9A14A] text-[#C9A14A] font-semibold px-4 py-2 rounded-lg hover:bg-[#F3E6C7] transition">
             <i class="fas fa-filter"></i> Filter
         </button>
-        <a href="{{ route('admin.paryushan.events.create') }}" class="bg-[#C9A14A] text-white font-semibold px-6 py-2 rounded-lg flex items-center gap-2 hover:bg-[#b38e3c] transition">
+        <a href="{{ route('sangh.paryushan.events.create') }}" class="bg-[#C9A14A] text-white font-semibold px-6 py-2 rounded-lg flex items-center gap-2 hover:bg-[#b38e3c] transition">
             <span>+ Add Event Registration</span>
         </a>
     </div>
 </div>
+
+<div id="filterSection" class="hidden mb-6 bg-white rounded-lg shadow p-4">
+    <div class="grid grid-cols-3 gap-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Select Event</label>
+            <select id="eventFilter" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#C9A14A]">
+                <option value="">All Events</option>
+            </select>
+        </div>
+        <div class="flex items-end gap-2">
+            <button id="applyFilter" class="bg-[#C9A14A] text-white font-semibold px-6 py-2 rounded-lg hover:bg-[#b38e3c] transition">
+                Apply Filter
+            </button>
+            <button id="resetFilter" class="border border-gray-300 text-gray-600 font-semibold px-6 py-2 rounded-lg hover:bg-gray-50 transition">
+                Reset
+            </button>
+        </div>
+    </div>
+</div>
+
 <div class="bg-white rounded-lg shadow p-6">
     <div class="mb-4 flex justify-between items-center">
-        <input type="text" id="searchInput" class="w-1/3 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#C9A14A]" placeholder="Search Sangh">
+        <input type="text" id="searchInput" class="w-1/3 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#C9A14A]" placeholder="Search Event Year">
     </div>
     <div class="overflow-x-auto datatable-theme-box">
         <table id="eventTable" class="min-w-full text-sm text-left">
             <thead class="bg-[#F8F5ED] text-[#1A2B49]">
                 <tr>
+                    @if(Auth::user()->hasRole('Admin'))
                     <th>Sangh Name</th>
+                    @endif
                     <th>Event</th>
                     <th>Email</th>
                     <th>Mobile Number</th>
@@ -101,34 +123,9 @@
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/izitoast/dist/js/iziToast.min.js"></script>
 <script>
-$(function() {
-    var table = $('#eventTable').DataTable({
-        processing: true,
-        serverSide: true,
-        ajax: {
-            url: '{{ route('admin.paryushan.events.datatable') }}',
-            data: function(d) {
-                d.search = $('#searchInput').val();
-            }
-        },
-        columns: [
-            { data: 'sangh_name', name: 'sangh_name' },
-            { data: 'event', name: 'event' },
-            { data: 'email', name: 'email' },
-            { data: 'mobile', name: 'mobile' },
-            { data: 'country', name: 'country' },
-            { data: 'status', name: 'status', orderable: false, searchable: false },
-            { data: 'actions', name: 'actions', orderable: false, searchable: false },
-        ],
-        drawCallback: function(settings) {
-            $('#eventCount').text(settings._iRecordsTotal + ' Events');
-        },
-        dom: 'rtip'
-    });
-    $('#searchInput').on('keyup', function() {
-        table.search(this.value).draw();
-    });
-    // Add action handlers (view, edit, delete) here
-});
+    window.isAdmin = {{ Auth::user()->hasRole('Admin') ? 'true' : 'false' }};
+    window.csrfToken = '{{ csrf_token() }}';
+    window.eventYears = @json(\App\Constants\Constants::EVENT_YEAR);
 </script>
+<script src="{{ asset('js/paryushan-event.js') }}"></script>
 @endpush 

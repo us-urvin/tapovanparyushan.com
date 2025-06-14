@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\AdminProfileController;
 use App\Http\Controllers\Admin\SanghController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\SanghProfileController;
+use App\Http\Controllers\Admin\ParyushanEventController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -28,6 +29,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/dashboard', function () {
         return view('admin.dashboard');
     })->name('admin.dashboard');
+    
+    Route::get('/sangh/dashboard', function () {
+        return view('admin.dashboard');
+    })->name('sangh.dashboard');
     Route::get('/admin/profile', [AdminProfileController::class, 'edit'])->name('admin.profile');
     Route::post('/admin/profile', [AdminProfileController::class, 'update'])->name('admin.profile.update');
 });
@@ -50,8 +55,16 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/sangh', [SanghController::class, 'store'])->name('sangh.store');
 });
 
-Route::prefix('admin/paryushan')->name('admin.paryushan.')->middleware(['auth'])->group(function () {
-    Route::get('events', [App\Http\Controllers\Admin\ParyushanEventController::class, 'index'])->name('events.index');
-    Route::get('events/create', [App\Http\Controllers\Admin\ParyushanEventController::class, 'create'])->name('events.create');
-    Route::get('events/datatable', [App\Http\Controllers\Admin\ParyushanEventController::class, 'datatable'])->name('events.datatable');
+Route::prefix('sangh/paryushan')->name('sangh.paryushan.')->middleware(['auth'])->group(function () {
+    Route::get('events', [ParyushanEventController::class, 'index'])->name('events.index');
+    Route::get('events/create', [ParyushanEventController::class, 'create'])->name('events.create');
+    Route::get('events/datatable', [ParyushanEventController::class, 'datatable'])->name('events.datatable');
+    Route::post('events', [ParyushanEventController::class, 'store'])->name('events.store');
+    Route::post('events/update-status', [ParyushanEventController::class, 'updateStatus'])->name('events.update-status');
+    Route::get('events/{id}/view', [\App\Http\Controllers\Admin\ParyushanEventController::class, 'show'])->name('events.show');
+    Route::get('events/{id}/download-pdf', [\App\Http\Controllers\Admin\ParyushanEventController::class, 'downloadPdf'])->name('events.download-pdf');
+    Route::get('events/{id}/edit', [ParyushanEventController::class, 'edit'])->name('events.edit');
+    Route::put('events/{id}', [ParyushanEventController::class, 'update'])->name('events.update');
+    Route::delete('events/{id}', [ParyushanEventController::class, 'destroy'])->name('events.destroy');
 });
+

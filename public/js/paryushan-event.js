@@ -10,6 +10,7 @@ class ParyushanStepper {
         this.setupNavigationButtons();
         this.setupStepClickHandlers();
         this.setupFormValidation();
+        this.setupFileUpload();
     }
 
     setupFormValidation() {
@@ -34,6 +35,23 @@ class ParyushanStepper {
                 if (!emailRegex.test(value)) {
                     isValid = false;
                     errorMessage = 'Please enter a valid email address';
+                }
+            } else if (input.name === 'contact_person[phone]') {
+                const phoneRegex = /^\d{10}$/;
+                if (!phoneRegex.test(value)) {
+                    isValid = false;
+                    errorMessage = 'Phone number must be exactly 10 digits';
+                }
+            } else if (input.type === 'file' || input.id === 'pdf_upload') {
+                const file = input.files[0];
+                if (file) {
+                    if (file.type !== 'application/pdf') {
+                        isValid = false;
+                        errorMessage = 'Only PDF files are allowed';
+                    } else if (file.size > 10 * 1024 * 1024) { // 10MB in bytes
+                        isValid = false;
+                        errorMessage = 'File size must not exceed 10MB';
+                    }
                 }
             } else if (input.type === 'number') {
                 if (isNaN(value) || parseInt(value) < 0) {
@@ -82,7 +100,14 @@ class ParyushanStepper {
         if (stepNumber === 6) {
             const terms = stepContent.querySelector('input[type="checkbox"][name="terms_agree"]');
             if (terms && !terms.checked) {
-                this.showError(terms, 'You must agree to the terms and conditions');
+                const termsError = document.createElement('div');
+                termsError.className = 'text-red-500 text-sm ml-2';
+                termsError.textContent = 'You must agree to the terms and conditions';
+                const existingError = terms.parentElement.querySelector('.text-red-500');
+                if (existingError) {
+                    existingError.remove();
+                }
+                terms.parentElement.appendChild(termsError);
                 isValid = false;
             }
         }
@@ -105,10 +130,24 @@ class ParyushanStepper {
         // On submit, validate last step
         const form = document.getElementById('paryushanEventForm');
         if (form) {
+            const eventSave = document.getElementById('eventSave');
+            const eventBtnLoader = document.getElementById('eventBtnLoader');
+
             form.addEventListener('submit', (e) => {
                 if (!this.validateStep(this.totalSteps)) {
                     e.preventDefault();
+                    if (eventSave && eventBtnLoader) {
+                        eventBtnLoader.classList.remove('hidden');
+                        eventSave.textContent = 'Sending...';
+                    }
+                } else {
+                    if (eventSave && eventBtnLoader) {
+                        eventBtnLoader.classList.remove('hidden');
+                        eventSave.textContent = 'Sending...';
+                    }
                 }
+
+                
             });
         }
     }
@@ -177,8 +216,277 @@ class ParyushanStepper {
         const active = document.querySelector(`.step-content[data-step="${stepNumber}"]`);
         if (active) active.classList.remove('hidden');
     }
+
+    setupFileUpload() {
+        const fileInput = document.getElementById('pdf_upload');
+        if (fileInput) {
+            fileInput.addEventListener('change', () => {
+                this.validatePdfUpload(fileInput);
+            });
+        }
+    }
+
+    validatePdfUpload(input) {
+        const file = input.files[0];
+        const errorElement = document.getElementById('pdf_error');
+        const fileNameElement = document.getElementById('uploaded_file_name');
+        const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    
+        if (file) {
+            if (file.type !== 'application/pdf') {
+                errorElement.textContent = 'Only PDF files are allowed';
+                errorElement.classList.remove('hidden');
+                fileNameElement.textContent = '';
+                input.value = ''; // Clear the file input
+                return false;
+            }
+            
+            if (file.size > maxSize) {
+                errorElement.textContent = 'File size must not exceed 10MB';
+                errorElement.classList.remove('hidden');
+                fileNameElement.textContent = '';
+                input.value = ''; // Clear the file input
+                return false;
+            }
+    
+            // If validation passes
+            errorElement.classList.add('hidden');
+            fileNameElement.textContent = `Uploaded: ${file.name}`;
+            return true;
+        }
+        return false;
+    } 
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    new ParyushanStepper();
-}); 
+class ParyushanEvents {
+    constructor() {
+        this.table = null;
+        this.init();
+    }
+
+    init() {
+        this.initializeDataTable();
+        this.setupEventListeners();
+        this.populateEventDropdown();
+    }
+
+    initializeDataTable() {
+        this.table = $('#eventTable').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: '/sangh/paryushan/events/datatable',
+                data: (d) => {
+                    d.search = $('#searchInput').val();
+                    d.event_id = $('#eventFilter').val();
+                }
+            },
+            columns: this.getTableColumns(),
+            drawCallback: (settings) => {
+                $('#eventCount').text(settings._iRecordsTotal + ' Events');
+            },
+            dom: 'rtip'
+        });
+    }
+
+    getTableColumns() {
+        const columns = [];
+        
+        // Add Sangh Name column if user is admin
+        if (window.isAdmin) {
+            columns.push({ data: 'sangh_name', name: 'sangh_name' });
+        }
+
+        // Add other columns
+        columns.push(
+            { data: 'event', name: 'event', searchable: true, sortable: true },
+            { data: 'email', name: 'email', searchable: true, sortable: true },
+            { data: 'mobile', name: 'mobile', searchable: false, sortable: true },
+            { data: 'country', name: 'country', searchable: false, sortable: true },
+            { data: 'status', name: 'status', searchable: false, sortable: false },
+            { data: 'actions', name: 'actions', searchable: false, sortable: false }
+        );
+
+        return columns;
+    }
+
+    populateEventDropdown() {
+        const eventFilter = $('#eventFilter');
+        eventFilter.empty();
+        eventFilter.append('<option value="">All Events</option>');
+        
+        // Add events from EVENT_YEAR constant
+        Object.entries(window.eventYears).forEach(([year, label]) => {
+            eventFilter.append(`<option value="${year}">${label}</option>`);
+        });
+    }
+
+    setupEventListeners() {
+        // Search input handler
+        $('#searchInput').on('keyup', (e) => {
+            this.table.search(e.target.value).draw();
+        });
+
+        // Filter button toggle
+        $('#filterBtn').on('click', () => {
+            $('#filterSection').slideToggle(200);
+        });
+
+        // Apply filter button
+        $('#applyFilter').on('click', () => {
+            this.table.ajax.reload();
+        });
+
+        // Reset filter button
+        $('#resetFilter').on('click', () => {
+            $('#eventFilter').val('');
+            this.table.ajax.reload();
+        });
+
+        // Status update handler
+        $(document).on('change', '.status-select', (e) => {
+            this.handleStatusUpdate(e);
+        });
+
+        // View button handler
+        $(document).on('click', '.view-btn', (e) => {
+            const id = $(e.currentTarget).data('id');
+            this.handleView(id);
+        });
+
+        // Edit button handler
+        $(document).on('click', '.edit-btn', (e) => {
+            const id = $(e.currentTarget).data('id');
+            this.handleEdit(id);
+        });
+
+        // Delete button handler
+        $(document).on('click', '.delete-btn', (e) => {
+            const id = $(e.currentTarget).data('id');
+            this.handleDelete(id);
+        });
+    }
+
+    loadEvents() {
+        $.ajax({
+            url: '/sangh/paryushan/events/get-events',
+            method: 'GET',
+            success: (response) => {
+                const eventFilter = $('#eventFilter');
+                eventFilter.empty();
+                eventFilter.append('<option value="">All Events</option>');
+                
+                response.forEach((event) => {
+                    eventFilter.append(`<option value="${event.id}">${event.name}</option>`);
+                });
+            },
+            error: (xhr) => {
+                this.showNotification('error', 'Error', 'Failed to load events');
+            }
+        });
+    }
+
+    handleStatusUpdate(event) {
+        const select = $(event.currentTarget);
+        const id = select.data('id');
+        const status = select.val();
+
+        $.ajax({
+            url: '/sangh/paryushan/events/update-status',
+            method: 'POST',
+            data: {
+                _token: window.csrfToken,
+                id: id,
+                status: status
+            },
+            success: (response) => {
+                if (response.success) {
+                    this.showNotification('success', 'Success', response.message);
+                    this.updateStatusStyles(select, status);
+                }
+            },
+            error: (xhr) => {
+                this.showNotification('error', 'Error', xhr.responseJSON?.message || 'Failed to update status');
+                this.table.ajax.reload();
+            }
+        });
+    }
+
+    updateStatusStyles(select, status) {
+        const statusClasses = {
+            0: 'text-yellow-600 bg-yellow-50',
+            1: 'text-blue-500 bg-blue-50',
+            2: 'text-red-500 bg-red-50'
+        };
+        select.removeClass().addClass('status-select ' + statusClasses[status] + ' px-3 py-1 rounded-full text-xs font-semibold');
+    }
+
+    showNotification(type, title, message) {
+        iziToast[type]({
+            title: title,
+            message: message,
+            position: 'topRight'
+        });
+    }
+
+    handleView(id) {
+        window.location.href = `/sangh/paryushan/events/${id}/view`;
+    }
+
+    handleEdit(id) {
+        // Implement edit functionality
+        console.log('Edit event:', id);
+    }
+
+    handleDelete(id) {
+        const self = this;
+        iziToast.question({
+            timeout: 20000,
+            close: false,
+            overlay: true,
+            displayMode: 'once',
+            id: 'question',
+            zindex: 999,
+            title: 'Delete Confirmation',
+            message: 'Are you sure you want to delete this event?',
+            position: 'center',
+            buttons: [
+                ['<button><b>YES</b></button>', function (instance, toast) {
+                    $.ajax({
+                        url: `/sangh/paryushan/events/${id}`,
+                        type: 'DELETE',
+                        data: { _token: window.csrfToken },
+                        success: function(res) {
+                            if (res.success) {
+                                self.showNotification('success', 'Deleted', res.message);
+                                self.table.ajax.reload(null, false);
+                            } else {
+                                self.showNotification('error', 'Error', res.message || 'Failed to delete event.');
+                            }
+                        },
+                        error: function(xhr) {
+                            self.showNotification('error', 'Error', xhr.responseJSON?.message || 'Failed to delete event.');
+                        }
+                    });
+                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                }, true],
+                ['<button>Cancel</button>', function (instance, toast) {
+                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                }]
+            ]
+        });
+    }
+}
+
+// Initialize when document is ready
+$(document).ready(() => {
+    // Initialize stepper if the form exists
+    if (document.getElementById('paryushanEventForm')) {
+        new ParyushanStepper();
+    }
+    
+    // Initialize events table if it exists
+    if (document.getElementById('eventTable')) {
+        new ParyushanEvents();
+    }
+});

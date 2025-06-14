@@ -62,7 +62,14 @@
                 <div class="step-text mt-2 text-xs font-semibold text-black text-center">Terms & Conditions</div>
             </div>
         </div>
-        <form id="paryushanEventForm" action="#" method="POST" novalidate>
+            <form id="paryushanEventForm"
+                action="{{ isset($event) ? route('sangh.paryushan.events.update', $event->id) : route('sangh.paryushan.events.store') }}"
+                method="POST"
+                enctype="multipart/form-data"
+                novalidate>
+            @if(isset($event))
+                @method('PUT')
+            @endif
             @csrf
             @include('admin.paryushan.events.steps.step1')
             @include('admin.paryushan.events.steps.step2')

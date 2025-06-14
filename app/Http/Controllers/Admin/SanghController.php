@@ -270,6 +270,8 @@ class SanghController extends Controller
         $user->status = $request->status;
         $user->save();
 
+        Sangh::where('user_id', $user->id)->update(['status' => $request->status]);
+
         return response()->json(['success' => true, 'status' => $user->status]);
     }
 

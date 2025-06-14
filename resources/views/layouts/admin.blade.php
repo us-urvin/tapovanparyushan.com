@@ -75,12 +75,22 @@
             </div>
             <nav class="flex-1">
                 <ul class="space-y-2">
-                    <li>
-                        <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'bg-[#F3E6C7] text-[#C9A14A]' : 'text-[#1A2B49]' }}">
-                            <i class="fas fa-home nav-icon"></i>
-                            <span class="nav-text">Dashboard</span>
-                        </a>
-                    </li>
+                    @if (Auth::user()->hasRole('Admin'))
+                        <li>
+                            <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'bg-[#F3E6C7] text-[#C9A14A]' : 'text-[#1A2B49]' }}">
+                                <i class="fas fa-home nav-icon"></i>
+                                <span class="nav-text">Dashboard</span>
+                            </a>
+                        </li>                        
+                    @else
+                        <li>
+                            <a href="{{ route('sangh.dashboard') }}" class="nav-item {{ request()->routeIs('sangh.dashboard') ? 'bg-[#F3E6C7] text-[#C9A14A]' : 'text-[#1A2B49]' }}">
+                                <i class="fas fa-home nav-icon"></i>
+                                <span class="nav-text">Dashboard</span>
+                            </a>
+                        </li>
+                    @endif
+
                     @if(Auth::user()->hasRole('Shangh'))
                         <li>
                             <a href="{{ route('sangh.profile') }}" class="nav-item {{ request()->is('sangh/profile*') ? 'bg-[#F3E6C7] text-[#C9A14A]' : 'text-[#1A2B49]' }}">
@@ -97,23 +107,23 @@
                         </li>
                     @endif
                     <li>
-                        <a href="{{ route('admin.paryushan.events.index') }}" class="nav-item {{ request()->is('admin/paryushan/events*') ? 'bg-[#F3E6C7] text-[#C9A14A]' : 'text-[#1A2B49]' }}">
+                        <a href="{{ route('sangh.paryushan.events.index') }}" class="nav-item {{ request()->is('sangh/paryushan/events*') ? 'bg-[#F3E6C7] text-[#C9A14A]' : 'text-[#1A2B49]' }}">
                             <i class="fas fa-clipboard-list nav-icon"></i>
-                            <span class="nav-text">Apply for Paryushan</span>
+                            @if(Auth::user()->hasRole('Shangh'))
+                                <span class="nav-text">Apply for Paryushan</span>
+                            @else
+                                <span class="nav-text">Events</span>
+                            @endif
                         </a>
                     </li>
-                    <li>
-                        <a href="#" class="nav-item {{ request()->is('admin/feedback*') ? 'bg-[#F3E6C7] text-[#C9A14A]' : 'text-[#1A2B49]' }}">
-                            <i class="fas fa-comment-alt nav-icon"></i>
-                            <span class="nav-text">Feedback</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('admin.profile') }}" class="nav-item {{ request()->routeIs('admin.profile') ? 'bg-[#F3E6C7] text-[#C9A14A]' : 'text-[#1A2B49]' }}">
-                            <i class="fas fa-user nav-icon"></i>
-                            <span class="nav-text">Profile</span>
-                        </a>
-                    </li>
+                    @if (Auth::user()->hasRole('Admin'))
+                        <li>
+                            <a href="{{ route('admin.profile') }}" class="nav-item {{ request()->routeIs('admin.profile') ? 'bg-[#F3E6C7] text-[#C9A14A]' : 'text-[#1A2B49]' }}">
+                                <i class="fas fa-user nav-icon"></i>
+                                <span class="nav-text">Profile</span>
+                            </a>
+                        </li>
+                    @endif
                 </ul>
                 <div class="mt-auto pt-8">
                     <form method="POST" action="{{ route('admin.logout') }}">

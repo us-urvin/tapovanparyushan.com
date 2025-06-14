@@ -425,4 +425,24 @@ final class Constants extends Response
         1 => 'Type 1',
         2 => 'Type 2',
     ];
+
+    public const EVENT_YEAR = [
+        2025 => '2025',
+        2026 => '2026',
+        2027 => '2027',
+        2028 => '2028',
+        2029 => '2029',
+        2030 => '2030',
+        2031 => '2031',
+        2032 => '2032',
+        2033 => '2033',
+        2034 => '2034',
+        2035 => '2035',
+    ];
+
+    public const EVENT_STATUS = [
+        0 => 'Pending',
+        1 => 'Accepted',
+        2 => 'Rejected',
+    ];
 }

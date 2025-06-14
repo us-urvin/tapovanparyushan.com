@@ -143,7 +143,7 @@ class LoginController extends Controller
         if ($user) {
             // Log the user in
             Auth::login($user);
-            return redirect()->route('sangh.profile');
+            return redirect()->route('sangh.dashboard');
         } else {
             // User needs to register
             return redirect()->route('register', ['mobile' => $mobileNumber]);

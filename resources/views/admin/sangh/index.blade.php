@@ -177,10 +177,9 @@ $(function() {
             ]
         });
     });
-    $(document).on('click', '.editSanghBtn', function() {
-        var userId = $(this).data('user-id');
-        // TODO: Open edit modal and load form via AJAX
-        iziToast.info({ title: 'Edit', message: 'Edit modal coming soon.' });
+    $(document).on('click', '.edit-btn', function() {
+        var eventId = $(this).data('id');
+        window.location.href = '/sangh/paryushan/events/' + eventId + '/edit';
     });
     $(document).on('click', '.viewSanghBtn', function() {
         var userId = $(this).data('user-id');
