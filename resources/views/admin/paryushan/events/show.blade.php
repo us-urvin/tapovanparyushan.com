@@ -10,6 +10,13 @@
             Event ID: {{ $event->id }}
         </div>
         <div class="flex flex-col md:flex-row md:items-center gap-4">
+            @if(Auth::user()->hasRole('Admin'))
+                <select class="status-select bg-white border border-[#F3E6C7] px-4 py-2 rounded-lg font-semibold focus:ring-2 focus:ring-[#C9A14A] focus:outline-none transition" data-id="{{ $event->id }}">
+                    <option value="0" {{ $event->status == 0 ? 'selected' : '' }}>Pending</option>
+                    <option value="1" {{ $event->status == 1 ? 'selected' : '' }}>Approved</option>
+                    <option value="2" {{ $event->status == 2 ? 'selected' : '' }}>Rejected</option>
+                </select>
+            @endif
             <a href="{{ route('sangh.paryushan.events.download-pdf', $event->id) }}" class="bg-black text-white px-5 py-2 rounded-lg font-semibold">Download PDF</a>
         </div>
     </div>
@@ -167,3 +174,49 @@
     </div>
 </div>
 @endsection 
+
+@push('scripts')
+<script>
+    $(document).ready(function() {
+        $('.status-select').on('change', function() {
+            const select = $(this);
+            const id = select.data('id');
+            const status = select.val();
+
+            $.ajax({
+                url: '/sangh/paryushan/events/update-status',
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    id: id,
+                    status: status
+                },
+                success: function(response) {
+                    if (response.success) {
+                        iziToast.success({
+                            title: 'Success',
+                            message: response.message,
+                            position: 'topRight'
+                        });
+                        
+                        // Update status styles
+                        const statusClasses = {
+                            0: 'text-yellow-600 bg-yellow-50',
+                            1: 'text-blue-500 bg-blue-50',
+                            2: 'text-red-500 bg-red-50'
+                        };
+                        select.removeClass().addClass('status-select ' + statusClasses[status] + ' px-4 py-2 rounded-lg font-semibold');
+                    }
+                },
+                error: function(xhr) {
+                    iziToast.error({
+                        title: 'Error',
+                        message: xhr.responseJSON?.message || 'Failed to update status',
+                        position: 'topRight'
+                    });
+                }
+            });
+        });
+    });
+</script>
+@endpush 

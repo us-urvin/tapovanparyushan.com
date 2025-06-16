@@ -36,7 +36,7 @@
                         </svg>
                     </button>
 
-                    @if ($event && $event->hasPdfDocument())
+                    @if (isset($event) && $event->hasPdfDocument())
                         <a href="{{ $event->getPdfDocumentUrl() }}"
                            download
                            class="flex items-center gap-2 bg-[#1A2B49] text-white px-8 py-2 rounded-full font-semibold transition hover:bg-[#22376b] focus:outline-none">
@@ -48,7 +48,7 @@
                     @endif
                 </div>
                 <span id="uploaded_file_name" class="text-sm text-[#1A2B49]">Accepted File Types: PDF and max size 10MB</span>
-                @if ($event && $event->hasPdfDocument())
+                @if (isset($event) && $event->hasPdfDocument())
                     <span class="text-sm text-gray-600">Current File: {{ $event->getFirstMedia('event_pdf_document')->file_name }}</span>
                 @endif
                 <p id="pdf_error" class="text-red-500 text-sm hidden"></p>

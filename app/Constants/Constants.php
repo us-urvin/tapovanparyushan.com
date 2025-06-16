@@ -440,7 +440,7 @@ final class Constants extends Response
         2035 => '2035',
     ];
 
-    public const EVENT_STATUS = [
+    public const STATUS = [
         0 => 'Pending',
         1 => 'Accepted',
         2 => 'Rejected',

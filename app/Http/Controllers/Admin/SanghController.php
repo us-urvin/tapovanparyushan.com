@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Constants\Constants;
 use App\Http\Controllers\Controller;
 use App\Models\Sangh;
 use App\Models\User;
@@ -46,7 +47,22 @@ class SanghController extends Controller
                 return view('admin.sangh.partials.actions', compact('user'))->render();
             })
             ->addColumn('status_dropdown', function ($user) {
-                return view('admin.sangh.partials.status_dropdown', compact('user'))->render();
+                $statusClasses = [
+                    'pending' => 'text-yellow-600 bg-yellow-50',
+                    'accepted' => 'text-blue-500 bg-blue-50',
+                    'rejected' => 'text-red-500 bg-red-50',
+                ];
+                $statusClass = $statusClasses[$user->status] ?? 'text-gray-500 bg-gray-50';
+                
+                if (Auth::user()->hasRole('Admin')) {
+                    return '<select class="status-select ' . $statusClass . ' px-3 py-1 rounded-full text-xs font-semibold statusDropdown" data-user-id="' . $user->id . '">
+                        <option value="pending" ' . ($user->status === 'pending'  ? 'selected' : '') . '>Pending</option>
+                        <option value="accepted" ' . ($user->status === 'accepted' ? 'selected' : '') . '>Approved</option>
+                        <option value="rejected" ' . ($user->status === 'rejected' ? 'selected' : '') . '>Rejected</option>
+                    </select>';
+                }
+                
+                return '<span class="' . $statusClass . ' px-3 py-1 rounded-full text-xs font-semibold">' . ucfirst(Constants::STATUS[$user->status]) . '</span>';
             })
             ->rawColumns(['actions', 'status_dropdown'])
             ->make(true);
@@ -301,7 +317,14 @@ class SanghController extends Controller
     public function downloadPdf(User $user)
     {
         $sangh = $user->sangh;
-        $pdf = Pdf::loadView('admin.sangh.pdf', compact('user', 'sangh'));
-        return $pdf->download('sangh-profile-' . $user->id . '.pdf');
+        $media = $sangh->getFirstMedia('sangh_pdf_document');
+        
+        if (!$media) {
+            return redirect()->back()->with('error', 'PDF document not found.');
+        }
+
+        return response()->download($media->getPath(), $media->file_name);
+        // $pdf = Pdf::loadView('admin.sangh.pdf', compact('user', 'sangh'));
+        // return $pdf->download('sangh-profile-' . $user->id . '.pdf');
     }
 }

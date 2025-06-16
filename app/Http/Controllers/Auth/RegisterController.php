@@ -54,13 +54,10 @@ class RegisterController extends Controller
             'email' => $validated['email'],
         ]);
 
-        if ($request->hasFile('document')) {
-            $folderName = strtolower(str_replace(' ', '_', $sangh->sangh_name));
-            $sangh->addMedia($request->file('document'))
-                ->usingFileName($request->file('document')->getClientOriginalName())
-                ->usingDisk('public')
-                ->toMediaCollection('documents', 'public', 'sangh/' . $folderName);
+        if (isset($request->document)) {
+            $sangh->addMediaFromRequest('document')->toMediaCollection('sangh_pdf_document');
         }
+        
         $user->assignRole('Shangh');
 
         return Redirect::route('login')->with('success', 'Registration successful! Please login.');

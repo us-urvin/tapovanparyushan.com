@@ -56,8 +56,9 @@
                 <path d="M12 16V4m0 0l-4 4m4-4l4 4M4 20h16" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <span>Upload a Document</span>
-            <input type="file" name="document" class="hidden" />
+            <input type="file" name="document" class="hidden" id="documentInput" />
         </label>
+        <span id="selectedFileName" class="text-sm text-gray-600 mt-2"></span>
     </div>
     <input type="hidden" name="mobile" value="{{ request()->get('mobile') }}">
     <button id="registerBtn" type="submit" class="w-full bg-[#C9A14A] text-white py-2 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-[#b38e3c] transition mb-4">
@@ -74,11 +75,22 @@
                 if (errorDiv) {
                     errorDiv.style.display = 'none';
                 }
-                // Remove red border if present
                 input.classList.remove('border-red-500');
                 input.classList.add('border-gray-300');
             });
         });
+
+        const documentInput = document.getElementById('documentInput');
+        const selectedFileName = document.getElementById('selectedFileName');
+
+        documentInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                selectedFileName.textContent = 'Selected file: ' + this.files[0].name;
+            } else {
+                selectedFileName.textContent = '';
+            }
+        });
+
         document.getElementById('registerForm').addEventListener('submit', function() {
             const btn = document.getElementById('registerBtn');
             const loader = document.getElementById('registerBtnLoader');

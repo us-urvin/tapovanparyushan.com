@@ -10,7 +10,7 @@ use App\Http\Controllers\SanghProfileController;
 use App\Http\Controllers\Admin\ParyushanEventController;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('login');
 });
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');

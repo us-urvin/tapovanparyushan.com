@@ -56,6 +56,10 @@ class ParyushanEventController extends Controller
     {
         $query = Event::with('sangh')
             ->select('events.*');
+
+        if (!auth()->user()->hasRole('Admin')) {
+            $query->where('sangh_id', auth()->user()->sangh->id);
+        }
         
         if (isset($request->event_id) && !blank($request->event_id)) {
             $query->where('event_year', $request->event_id);
@@ -100,7 +104,7 @@ class ParyushanEventController extends Controller
                     </select>';
                 }
                 
-                return '<span class="' . $statusClass . ' px-3 py-1 rounded-full text-xs font-semibold">' . ucfirst(Constants::EVENT_STATUS[$row->status]) . '</span>';
+                return '<span class="' . $statusClass . ' px-3 py-1 rounded-full text-xs font-semibold">' . ucfirst(Constants::STATUS[$row->status]) . '</span>';
             })
             ->addColumn('actions', function ($row) {
                 return '<div class="flex gap-2">
@@ -145,9 +149,16 @@ class ParyushanEventController extends Controller
     public function downloadPdf($id)
     {
         $event = Event::with('sangh')->findOrFail($id);
-        $logo = public_path('images/logo.png');
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.paryushan.events.pdf', compact('event', 'logo'));
-        return $pdf->download('event-details-' . $event->id . '.pdf');
+        $media = $event->getFirstMedia('event_pdf_document');
+        
+        if (!$media) {
+            return redirect()->back()->with('error', 'PDF document not found.');
+        }
+
+        return response()->download($media->getPath(), $media->file_name);
+        // $logo = public_path('images/logo.png');
+        // $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.paryushan.events.pdf', compact('event', 'logo'));
+        // return $pdf->download('event-details-' . $event->id . '.pdf');
     }
 
     public function edit($id)
