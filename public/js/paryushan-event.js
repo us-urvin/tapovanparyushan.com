@@ -343,9 +343,41 @@ class ParyushanEvents {
             this.table.ajax.reload();
         });
 
-        // Status update handler
+        // Status update handler for event status (admin)
         $(document).on('change', '.status-select', (e) => {
             this.handleStatusUpdate(e);
+        });
+
+        // Assignment status update handler for center users
+        $(document).on('change', '.assignment-status-select', (e) => {
+            const select = $(e.currentTarget);
+            const eventId = select.data('event-id');
+            const status = select.val();
+            $.ajax({
+                url: '/sangh/paryushan/events/update-assignment-status',
+                method: 'POST',
+                data: {
+                    _token: window.csrfToken,
+                    event_id: eventId,
+                    status: status
+                },
+                success: (response) => {
+                    if (response.success) {
+                        this.showNotification('success', 'Success', response.message);
+                        // Update dropdown style
+                        const statusClasses = {
+                            'pending': 'text-yellow-600 bg-yellow-50',
+                            'accepted': 'text-blue-500 bg-blue-50',
+                            'rejected': 'text-red-500 bg-red-50'
+                        };
+                        select.removeClass().addClass('assignment-status-select ' + statusClasses[status] + ' px-3 py-1 rounded-full text-xs font-semibold');
+                    }
+                },
+                error: (xhr) => {
+                    this.showNotification('error', 'Error', xhr.responseJSON?.message || 'Failed to update assignment status');
+                    this.table.ajax.reload();
+                }
+            });
         });
 
         // View button handler

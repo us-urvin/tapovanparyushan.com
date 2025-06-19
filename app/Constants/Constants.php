@@ -440,9 +440,12 @@ final class Constants extends Response
         2035 => '2035',
     ];
 
+    public const STATUS_ACTIVE_TEXT = 'Active';
+    public const STATUS_INACTIVE_TEXT = 'Inactive';
+
     public const STATUS = [
-        0 => 'Pending',
-        1 => 'Accepted',
+        0 => self::STATUS_INACTIVE_TEXT,
+        1 => self::STATUS_ACTIVE_TEXT,
         2 => 'Rejected',
     ];
 }

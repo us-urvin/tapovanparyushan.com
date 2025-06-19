@@ -1,7 +1,13 @@
 @extends('layouts.auth')
 
 @section('content')
-<h1 class="text-2xl font-bold text-center text-[#1A2B49] mb-6">Admin Login</h1>
+<h1 class="text-2xl font-bold text-center text-[#1A2B49] mb-6">
+    @if(request()->is('center/*'))
+        Center Login
+    @else
+        Admin Login
+    @endif
+</h1>
 @if(session('error'))
     <div class="mb-4 text-red-600 text-sm">{{ session('error') }}</div>
 @endif
@@ -21,6 +27,9 @@
             <div class="text-red-600 text-xs mt-1 error-message" id="password_error">{{ $message }}</div>
         @enderror
     </div>
+    @if(request()->is('center/*'))
+        <input type="hidden" name="center" value="1" />
+    @endif
     <button id="adminLoginBtn" type="submit" class="w-full bg-[#C9A14A] text-white py-2 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-[#b38e3c] transition">
         <span id="adminLoginBtnText">Login</span>
         <svg id="adminLoginBtnLoader" class="w-5 h-5 animate-spin hidden" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="#fff" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>

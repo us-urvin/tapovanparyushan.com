@@ -14,6 +14,7 @@ class Event extends Model implements HasMedia
 
     protected $fillable = [
         'sangh_id',
+        'center_id',
         'event_year',
         'has_other_sangh',
         'jain_family_count',
@@ -77,6 +78,11 @@ class Event extends Model implements HasMedia
         return $this->belongsTo(Sangh::class);
     }
 
+    public function center()
+    {
+        return $this->belongsTo(Center::class);
+    }
+
     public function getPdfDocumentUrl()
     {
         $media = $this->getFirstMedia('event_pdf_document');
@@ -86,5 +92,10 @@ class Event extends Model implements HasMedia
     public function hasPdfDocument()
     {
         return $this->hasMedia('event_pdf_document');
+    }
+
+    public function centerAssignments()
+    {
+        return $this->hasMany(\App\Models\EventCenterAssignment::class);
     }
 } 

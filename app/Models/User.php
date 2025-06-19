@@ -63,4 +63,9 @@ class User extends Authenticatable implements HasMedia
     {
         return $this->hasOne(\App\Models\Sangh::class);
     }
+
+    public function center()
+    {
+        return $this->hasOne(Center::class, 'user_id');
+    }
 }

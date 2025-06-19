@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\SanghController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\SanghProfileController;
 use App\Http\Controllers\Admin\ParyushanEventController;
+use App\Http\Controllers\Admin\CenterController;
 
 Route::get('/', function () {
     return redirect('login');
@@ -35,6 +36,20 @@ Route::middleware(['auth'])->group(function () {
     })->name('sangh.dashboard');
     Route::get('/admin/profile', [AdminProfileController::class, 'edit'])->name('admin.profile');
     Route::post('/admin/profile', [AdminProfileController::class, 'update'])->name('admin.profile.update');
+});
+
+
+Route::get('/center/login', [AdminLoginController::class, 'show'])->name('center.login');
+Route::post('/center/login', [AdminLoginController::class, 'login'])->name('center.login.post');
+Route::post('/center/logout', [AdminLoginController::class, 'logout'])->name('center.logout');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/center/dashboard', function () {
+        return view('admin.dashboard');
+    })->name('center.dashboard');
+    
+    Route::get('/center/profile', [AdminProfileController::class, 'edit'])->name('center.profile');
+    Route::post('/center/profile', [AdminProfileController::class, 'update'])->name('center.profile.update');
 });
 
 Route::middleware(['auth'])->prefix('admin/sangh')->name('admin.sangh.')->group(function () {
@@ -66,5 +81,15 @@ Route::prefix('sangh/paryushan')->name('sangh.paryushan.')->middleware(['auth'])
     Route::get('events/{id}/edit', [ParyushanEventController::class, 'edit'])->name('events.edit');
     Route::put('events/{id}', [ParyushanEventController::class, 'update'])->name('events.update');
     Route::delete('events/{id}', [ParyushanEventController::class, 'destroy'])->name('events.destroy');
+    Route::post('events/{id}/assign-center', [ParyushanEventController::class, 'assignToCenter'])->name('events.assign-center');
+    Route::post('events/update-assignment-status', [ParyushanEventController::class, 'updateAssignmentStatus'])->name('events.update-assignment-status');
+});
+
+Route::middleware(['auth'])->prefix('admin/centers')->name('admin.centers.')->group(function () {
+    Route::get('/', [CenterController::class, 'index'])->name('index');
+    Route::get('/datatable', [CenterController::class, 'datatable'])->name('datatable');
+    Route::post('/', [CenterController::class, 'store'])->name('store');
+    Route::put('/{center}', [CenterController::class, 'update'])->name('update');
+    Route::post('/{center}/status', [CenterController::class, 'changeStatus'])->name('status');
 });
 

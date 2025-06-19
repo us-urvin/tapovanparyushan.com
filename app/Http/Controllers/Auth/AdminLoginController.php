@@ -16,6 +16,7 @@ class AdminLoginController extends Controller
 
     public function login(Request $request)
     {
+
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
@@ -23,9 +24,17 @@ class AdminLoginController extends Controller
 
         if (Auth::attempt(['email' => $credentials['email'], 'password' => $credentials['password']])) {
             $user = Auth::user();
-            if ($user->hasRole('Admin')) {
+            if ($user->hasRole('Admin')) { 
+                if (isset($request->center)) {
+                    return back()->withInput()->withErrors([
+                        'email' => 'The provided credentials do not match our records.',
+                    ]);
+                }
                 $request->session()->regenerate();
                 return redirect()->intended('/admin/dashboard');
+            } elseif ($user->hasRole('Center')) {
+                $request->session()->regenerate();
+                return redirect()->intended('/center/dashboard');
             } else {
                 Auth::logout();
                 return back()->withInput()->with('error', 'You do not have admin access.');

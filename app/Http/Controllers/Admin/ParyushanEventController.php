@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Constants\Constants;
 use App\Http\Controllers\Controller;
+use App\Models\Center;
 use App\Models\Event;
 use App\Models\Sangh;
+use App\Models\EventCenterAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -57,8 +59,18 @@ class ParyushanEventController extends Controller
         $query = Event::with('sangh')
             ->select('events.*');
 
-        if (!auth()->user()->hasRole('Admin')) {
-            $query->where('sangh_id', auth()->user()->sangh->id);
+        if (Auth::user()->hasRole('Center')) {
+            $center = Auth::user()->center;
+            if ($center) {
+                $query->whereHas('centerAssignments', function ($q) use ($center) {
+                    $q->where('center_id', $center->id);
+                });
+            } else {
+                // If the center user has no center, show nothing
+                $query->whereRaw('1=0');
+            }
+        } elseif (!Auth::user()->hasRole('Admin')) {
+            $query->where('sangh_id', Auth::user()->sangh->id);
         }
         
         if (isset($request->event_id) && !blank($request->event_id)) {
@@ -90,23 +102,43 @@ class ParyushanEventController extends Controller
             })
             ->addColumn('status', function ($row) {
                 $statusClasses = [
+                    'pending' => 'text-yellow-600 bg-yellow-50',
+                    'accepted' => 'text-blue-500 bg-blue-50',
+                    'rejected' => 'text-red-500 bg-red-50',
                     0 => 'text-yellow-600 bg-yellow-50',
                     1 => 'text-blue-500 bg-blue-50',
                     2 => 'text-red-500 bg-red-50',
                 ];
+                $user = Auth::user();
+                if ($user->hasRole('Center')) {
+                    $center = $user->center;
+                    $assignment = $row->centerAssignments->where('center_id', $center->id)->first();
+                    $assignStatus = $assignment ? $assignment->status : 'pending';
+                    $statusClass = $statusClasses[$assignStatus] ?? 'text-gray-500 bg-gray-50';
+                    return '<select class="assignment-status-select ' . $statusClass . ' px-3 py-1 rounded-full text-xs font-semibold" data-event-id="' . $row->id . '">
+                        <option value="pending" ' . ($assignStatus == 'pending' ? 'selected' : '') . '>Pending</option>
+                        <option value="accepted" ' . ($assignStatus == 'accepted' ? 'selected' : '') . '>Approved</option>
+                        <option value="rejected" ' . ($assignStatus == 'rejected' ? 'selected' : '') . '>Rejected</option>
+                    </select>';
+                }
                 $statusClass = $statusClasses[$row->status] ?? 'text-gray-500 bg-gray-50';
-                
-                if (Auth::user()->hasRole('Admin')) {
+                if ($user->hasRole('Admin')) {
                     return '<select class="status-select ' . $statusClass . ' px-3 py-1 rounded-full text-xs font-semibold" data-id="' . $row->id . '">
                         <option value="0" ' . ($row->status == 0 ? 'selected' : '') . '>Pending</option>
                         <option value="1" ' . ($row->status == 1 ? 'selected' : '') . '>Approved</option>
                         <option value="2" ' . ($row->status == 2 ? 'selected' : '') . '>Rejected</option>
                     </select>';
                 }
-                
-                return '<span class="' . $statusClass . ' px-3 py-1 rounded-full text-xs font-semibold">' . ucfirst(Constants::STATUS[$row->status]) . '</span>';
+                return '<span class="' . $statusClass . ' px-3 py-1 rounded-full text-xs font-semibold">' . ucfirst(\App\Constants\Constants::STATUS[$row->status]) . '</span>';
             })
             ->addColumn('actions', function ($row) {
+                if (Auth::user()->hasRole('Center')) {
+                    return '<div class="flex gap-2">
+                        <button title="View" class="view-btn cursor-pointer mr-2" data-id="' . $row->id . '">
+                            <i class="fa fa-eye text-[#1A2B49] hover:text-[#C9A14A]"></i>
+                        </button>
+                    </div>';
+                }
                 return '<div class="flex gap-2">
                     <button title="View" class="view-btn cursor-pointer mr-2" data-id="' . $row->id . '">
                         <i class="fa fa-eye text-[#1A2B49] hover:text-[#C9A14A]"></i>
@@ -143,7 +175,8 @@ class ParyushanEventController extends Controller
     public function show($id)
     {
         $event = Event::with('sangh')->findOrFail($id);
-        return view('admin.paryushan.events.show', compact('event'));
+        $centers = Center::where('status', 1)->pluck('id', 'center_name');
+        return view('admin.paryushan.events.show', compact('event', 'centers'));
     }
 
     public function downloadPdf($id)
@@ -206,5 +239,55 @@ class ParyushanEventController extends Controller
             Log::error('Event delete failed: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Failed to delete event.'], 500);
         }
+    }
+
+    // Assign or reassign an event to a center
+    public function assignToCenter(Request $request, $eventId)
+    {
+        $request->validate([
+            'center_id' => 'required|exists:centers,id',
+        ]);
+        $event = Event::findOrFail($eventId);
+        EventCenterAssignment::create([
+            'event_id' => $event->id,
+            'center_id' => $request->center_id,
+            'assigned_by' => auth()->id(),
+            'status' => 'pending',
+            'assigned_at' => now(),
+        ]);
+        return back()->with('success', 'Event assigned to center successfully.');
+    }
+
+    // View assignment history for an event
+    public function assignmentHistory($eventId)
+    {
+        $event = Event::with(['centerAssignments.center.user', 'centerAssignments.assignedBy'])->findOrFail($eventId);
+        return view('admin.paryushan.events.assignment-history', compact('event'));
+    }
+
+    public function updateAssignmentStatus(Request $request)
+    {
+        $request->validate([
+            'event_id' => 'required|exists:events,id',
+            'status' => 'required|in:pending,accepted,rejected',
+        ]);
+        $user = Auth::user();
+        if (!$user->hasRole('Center')) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+        $center = $user->center;
+        if (!$center) {
+            return response()->json(['success' => false, 'message' => 'No center found for user'], 404);
+        }
+        $assignment = \App\Models\EventCenterAssignment::where('event_id', $request->event_id)
+            ->where('center_id', $center->id)
+            ->first();
+        if (!$assignment) {
+            return response()->json(['success' => false, 'message' => 'Assignment not found'], 404);
+        }
+        $assignment->status = $request->status;
+        $assignment->responded_at = now();
+        $assignment->save();
+        return response()->json(['success' => true, 'message' => 'Assignment status updated successfully']);
     }
 } 

@@ -11,6 +11,34 @@
         </div>
         <div class="flex flex-col md:flex-row md:items-center gap-4">
             @if(Auth::user()->hasRole('Admin'))
+                <!-- Assignment Status Icon Trigger -->
+                @if($event->centerAssignments->count())
+                    <button id="centerStatusBtn" class="flex items-center gap-2 px-3 py-2 rounded bg-[#F3E6C7] hover:bg-[#e2d2a7] transition">
+                        <span class="font-semibold text-sm">Sub Admin Status</span>
+                        <!-- Show a colored dot if any assignment is not pending -->
+                        @php
+                            $hasAccepted = $event->centerAssignments->contains('status', 'accepted');
+                            $hasRejected = $event->centerAssignments->contains('status', 'rejected');
+                        @endphp
+                        @if($hasAccepted)
+                            <span title="Accepted" class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span>
+                        @elseif($hasRejected)
+                            <span title="Rejected" class="w-3 h-3 rounded-full bg-red-500 inline-block"></span>
+                        @else
+                            <span title="Pending" class="w-3 h-3 rounded-full bg-yellow-500 inline-block"></span>
+                        @endif
+                    </button>
+                @endif
+                <!-- Assignment Dropdown -->
+                <select class="assing-to bg-white border border-[#F3E6C7] px-4 py-2 rounded-lg font-semibold focus:ring-2 focus:ring-[#C9A14A] focus:outline-none transition" data-id="{{ $event->id }}">
+                    <option value="">Assing To Sub Admin</option>
+                    @foreach ($centers as $center => $id)
+                        @php
+                            $assignment = $event->centerAssignments->where('center_id', $id)->first();
+                        @endphp
+                        <option value="{{ $id }}" @if($assignment && in_array($assignment->status, ['pending','accepted'])) selected @endif>{{ $center }}</option>
+                    @endforeach
+                </select>
                 <select class="status-select bg-white border border-[#F3E6C7] px-4 py-2 rounded-lg font-semibold focus:ring-2 focus:ring-[#C9A14A] focus:outline-none transition" data-id="{{ $event->id }}">
                     <option value="0" {{ $event->status == 0 ? 'selected' : '' }}>Pending</option>
                     <option value="1" {{ $event->status == 1 ? 'selected' : '' }}>Approved</option>
@@ -173,6 +201,41 @@
         </div>
     </div>
 </div>
+
+{{-- Modal for Center Assignment Status --}}
+<div id="centerStatusModal" class="fixed inset-0 z-50 flex items-center justify-center bg-[#F3E6C7]/70 backdrop-blur-sm hidden transition-opacity duration-300">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 pt-12 pr-12 relative animate-fadeIn">
+        <button id="closeCenterStatusModal" class="absolute top-4 right-4 bg-white rounded-full shadow p-3 text-gray-400 hover:text-gray-600 focus:outline-none z-10">
+            <i class="fas fa-times text-xl"></i>
+        </button>
+        <h3 class="text-lg font-semibold text-[#1A2B49] mb-4">Sub Admin Status</h3>
+        <table class="min-w-max w-full table-auto text-sm border mb-2">
+            <thead>
+                <tr class="bg-[#F3E6C7]">
+                    <th class="px-2 py-1">Center</th>
+                    <th class="px-2 py-1">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($event->centerAssignments as $assignment)
+                    <tr>
+                        <td class="px-2 py-1">{{ $assignment->center->center_name ?? '-' }}</td>
+                        <td class="px-2 py-1 text-center">
+                            @if($assignment->status == 'accepted')
+                                <span title="Accepted" class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100"><i class="fas fa-check text-blue-500"></i></span>
+                            @elseif($assignment->status == 'rejected')
+                                <span title="Rejected" class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100"><i class="fas fa-times text-red-500"></i></span>
+                            @else
+                                <span title="Pending" class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-yellow-100"><i class="fas fa-clock text-yellow-500"></i></span>
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+</div>
+
 @endsection 
 
 @push('scripts')
@@ -217,6 +280,64 @@
                 }
             });
         });
+
+        // Assignment to center (sub admin)
+        $('.assing-to').on('change', function() {
+            const select = $(this);
+            const eventId = select.data('id');
+            const centerId = select.val();
+            if (!centerId) return;
+            $.ajax({
+                url: `/sangh/paryushan/events/${eventId}/assign-center`,
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    center_id: centerId
+                },
+                success: function(response) {
+                    iziToast.success({
+                        title: 'Success',
+                        message: response.message || 'Event assigned to center successfully.',
+                        position: 'topRight'
+                    });
+                    // Optionally disable select after assignment
+                    // select.prop('disabled', true);
+                },
+                error: function(xhr) {
+                    iziToast.error({
+                        title: 'Error',
+                        message: xhr.responseJSON?.message || 'Failed to assign event',
+                        position: 'topRight'
+                    });
+                }
+            });
+        });
+
+        // Center status modal logic
+        $('#centerStatusBtn').on('click', function() {
+            $('#centerStatusModal').removeClass('hidden');
+        });
+        $('#closeCenterStatusModal').on('click', function() {
+            $('#centerStatusModal').addClass('hidden');
+        });
+        $('#centerStatusModal').on('click', function(e) {
+            if (e.target === this) {
+                $(this).addClass('hidden');
+            }
+        });
     });
 </script>
+@endpush 
+
+@push('styles')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<style>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn { animation: fadeIn 0.3s ease; }
+    #centerStatusModal { background: rgba(243, 230, 199, 0.7) !important; }
+    #centerStatusModal .bg-white { box-shadow: 0 10px 40px 0 rgba(0,0,0,0.15); }
+</style>
 @endpush 

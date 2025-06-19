@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin Dashboard') | Tapovan Paryushan Aradhana</title>
     @vite('resources/css/app.css')
     @stack('styles')
@@ -82,9 +83,16 @@
                                 <span class="nav-text">Dashboard</span>
                             </a>
                         </li>                        
-                    @else
+                    @elseif (Auth::user()->hasRole('Sangh'))
                         <li>
                             <a href="{{ route('sangh.dashboard') }}" class="nav-item {{ request()->routeIs('sangh.dashboard') ? 'bg-[#F3E6C7] text-[#C9A14A]' : 'text-[#1A2B49]' }}">
+                                <i class="fas fa-home nav-icon"></i>
+                                <span class="nav-text">Dashboard</span>
+                            </a>
+                        </li>
+                    @elseif (Auth::user()->hasRole('Center'))
+                        <li>
+                            <a href="{{ route('center.dashboard') }}" class="nav-item {{ request()->routeIs('center.dashboard') ? 'bg-[#F3E6C7] text-[#C9A14A]' : 'text-[#1A2B49]' }}">
                                 <i class="fas fa-home nav-icon"></i>
                                 <span class="nav-text">Dashboard</span>
                             </a>
@@ -98,13 +106,13 @@
                                 <span class="nav-text">Sangh Profile</span>
                             </a>
                         </li>
-                    @else
+                    @elseif (Auth::user()->hasRole('Admin'))
                         <li>
                             <a href="{{ route('admin.sangh.index') }}" class="nav-item {{ request()->is('admin/sangh*') ? 'bg-[#F3E6C7] text-[#C9A14A]' : 'text-[#1A2B49]' }}">
                                 <i class="fas fa-users nav-icon"></i>
                                 <span class="nav-text">Sangh Profile</span>
                             </a>
-                        </li>
+                        </li>   
                     @endif
                     <li>
                         <a href="{{ route('sangh.paryushan.events.index') }}" class="nav-item {{ request()->is('sangh/paryushan/events*') ? 'bg-[#F3E6C7] text-[#C9A14A]' : 'text-[#1A2B49]' }}">
@@ -116,6 +124,14 @@
                             @endif
                         </a>
                     </li>
+                    @if (Auth::user()->hasRole('Admin'))
+                        <li>
+                            <a href="{{ route('admin.centers.index') }}" class="nav-item {{ request()->is('admin/centers*') ? 'bg-[#F3E6C7] text-[#C9A14A]' : 'text-[#1A2B49]' }}">
+                                <i class="fas fa-building nav-icon"></i>
+                                <span class="nav-text">Centers</span>
+                            </a>
+                        </li>
+                    @endif
                     @if (Auth::user()->hasRole('Admin'))
                         <li>
                             <a href="{{ route('admin.profile') }}" class="nav-item {{ request()->routeIs('admin.profile') ? 'bg-[#F3E6C7] text-[#C9A14A]' : 'text-[#1A2B49]' }}">
