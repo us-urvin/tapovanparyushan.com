@@ -11,6 +11,7 @@ class BusTransportation extends Model
         'sangh_id',
         'from',
         'to',
+        'bus_name',
     ];
 
     public function sangh(): BelongsTo

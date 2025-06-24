@@ -14,8 +14,9 @@
                     <label class="block text-[#1A2B49] text-sm font-medium mb-1">Shree Sangh Type <span class="text-red-500">*</span></label>
                     <select name="sangh_type" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#C9A14A] text-[#1A2B49]" required>
                         <option value="">Select Type</option>
-                        <option value="1" {{ (old('sangh_type', $sangh->sangh_type ?? '') == '1') ? 'selected' : '' }}>Type 1</option>
-                        <option value="2" {{ (old('sangh_type', $sangh->sangh_type ?? '') == '2') ? 'selected' : '' }}>Type 2</option>
+                        @foreach (\App\Constants\Constants::SANGH_TYPE as $key => $type)                            
+                            <option value="{{ $key }}" {{ (old('sangh_type', $sangh->sangh_type ?? '') == $key) ? 'selected' : '' }}>{{ $type }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div>

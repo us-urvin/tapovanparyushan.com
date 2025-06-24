@@ -13,7 +13,7 @@
         <button id="filterBtn" class="flex items-center gap-2 border border-[#C9A14A] text-[#C9A14A] font-semibold px-4 py-2 rounded-lg hover:bg-[#F3E6C7] transition">
             <i class="fas fa-filter"></i> Filter
         </button>
-        @if (!auth()->user()->hasRole('Center'))
+        @if (!auth()->user()->hasRole('Center') && !auth()->user()->hasRole('Admin'))
             <a href="{{ route('sangh.paryushan.events.create') }}" class="bg-[#C9A14A] text-white font-semibold px-6 py-2 rounded-lg flex items-center gap-2 hover:bg-[#b38e3c] transition">
                 <span>+ Apply For {{ \Carbon\Carbon::now()->year }} Payushan</span>
             </a>            
@@ -56,6 +56,10 @@
                     <th>Mobile Number</th>
                     <th>Country</th>
                     <th>Status</th>
+                    @if(Auth::user()->hasRole('Admin'))
+                    <th>Sub Admin Status</th>
+                    <th>Assign Sub Admin</th>
+                    @endif
                     <th>Actions</th>
                 </tr>
             </thead>

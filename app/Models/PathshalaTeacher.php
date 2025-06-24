@@ -5,14 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class TrainTransportation extends Model
+class PathshalaTeacher extends Model
 {
     protected $fillable = [
         'sangh_id',
-        'from',
-        'train_name',
-        'train_number',
-        'to',
+        'first_name',
+        'last_name',
+        'email',
+        'phone',
     ];
 
     public function sangh(): BelongsTo

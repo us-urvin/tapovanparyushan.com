@@ -76,4 +76,9 @@ class Sangh extends Model implements HasMedia
     {
         return $this->hasMany(TrainTransportation::class);
     }
+
+    public function pathshalaTeachers(): HasMany
+    {
+        return $this->hasMany(PathshalaTeacher::class);
+    }
 } 

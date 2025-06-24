@@ -1,3 +1,46 @@
+<style>
+/* Custom Select2 styles for bhakti_instrument_list only */
+#bhakti_instrument_list + .select2-container--default .select2-selection--multiple {
+    background-color: #fff;
+    border: 1px solid #F3E6C7;
+    border-radius: 0.5rem;
+    min-height: 42px;
+    padding: 0.25rem 0.5rem;
+    font-size: 1rem;
+    box-shadow: none;
+}
+#bhakti_instrument_list + .select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: #F3E6C7;
+    border: none;
+    color: #1A2B49;
+    border-radius: 0.375rem;
+    padding: 0.25rem 0.75rem;
+    margin-top: 0.25rem;
+    margin-right: 0.25rem;
+    font-size: 0.95rem;
+}
+#bhakti_instrument_list + .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    color: #C9A14A;
+    margin-right: 0.5rem;
+    font-weight: bold;
+    border-right:none !important;
+    padding: 3px 0px !important;
+}
+#bhakti_instrument_list + .select2-container--default .select2-selection--multiple:focus {
+    border-color: #C9A14A;
+    outline: none;
+    box-shadow: 0 0 0 2px #C9A14A33;
+}
+#bhakti_instrument_list + .select2-container--default .select2-selection--multiple .select2-search__field {
+    margin-top: 0.25rem;
+    font-size: 1rem;
+}
+#bhakti_instrument_list + .select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: #F3E6C7;
+    color: #C9A14A;
+}
+</style>
+
 <!-- Step 3 Content -->
 <div class="step-content hidden" data-step="3">
     <div class="bg-[#FCF7ED] border border-[#F3E6C7] rounded-xl p-8">
@@ -61,8 +104,15 @@
                 </div>
                 <div>
                     <label class="block text-[#1A2B49] text-sm font-medium mb-1">Select the instrument that shree sangh have <span class="text-red-500">*</span></label>
-                    <input type="text" name="bhakti_instrument_list" placeholder="" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#C9A14A]" required
-                    value="{{ old('bhakti_instrument_list', $event->bhakti_instrument_list ?? '') }}">
+                    <select id="bhakti_instrument_list" name="bhakti_instrument_list[]" multiple class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#C9A14A] select2" data-placeholder="Select instruments" required>
+                        @php
+                            $selectedInstruments = old('bhakti_instrument_list', $event->bhakti_instrument_list ?? []);
+                        @endphp
+                        @foreach(\App\Constants\Constants::BHAKTI_INSTRUMENTS as $key => $label)
+                            <option value="{{ $key }}" {{ in_array($key, $selectedInstruments) ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    {{-- Select2 will be initialized on this select in JS --}}
                 </div>
             </div>
         </div>

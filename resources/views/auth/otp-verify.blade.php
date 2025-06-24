@@ -32,9 +32,6 @@
                 <input type="hidden" name="mobile" value="{{ session('mobile_number') }}">
                 <button type="submit" class="text-sm text-[#1A2B49] font-semibold hover:underline">Resend One-Time Password</button>
             </form>
-            <div class="text-xs text-gray-400 mt-2">
-                <a href="{{ route('login') }}" class="text-[#C9A14A] hover:underline">Entered a wrong number?</a>
-            </div>
         </div>
     </div>
 </div>

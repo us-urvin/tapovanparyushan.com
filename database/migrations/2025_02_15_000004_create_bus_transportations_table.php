@@ -13,6 +13,7 @@ return new class extends Migration
             $table->unsignedBigInteger('sangh_id');
             $table->string('from');
             $table->string('to');
+            $table->string('bus_name')->nullable();
             $table->timestamps();
             $table->foreign('sangh_id')->references('id')->on('sanghs')->onDelete('cascade');
         });

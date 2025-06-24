@@ -147,10 +147,34 @@
             <td>{{ $sangh->has_pathshala ? 'Yes' : 'No' }}</td>
         </tr>
         @if($sangh->has_pathshala)
-        <tr><th>First Name</th><td>{{ $sangh->pathshala_first_name ?? '-' }}</td></tr>
-        <tr><th>Last Name</th><td>{{ $sangh->pathshala_last_name ?? '-' }}</td></tr>
-        <tr><th>Email Address</th><td>{{ $sangh->pathshala_email ?? '-' }}</td></tr>
-        <tr><th>Phone Number</th><td>{{ $sangh->pathshala_phone ?? '-' }}</td></tr>
+        <tr><td colspan="2">
+            <table class="info-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($sangh->pathshalaTeachers as $index => $teacher)
+                    <tr>
+                        <td>{{ $index + 1 }}</td>
+                        <td>{{ $teacher->first_name }}</td>
+                        <td>{{ $teacher->last_name }}</td>
+                        <td>{{ $teacher->email }}</td>
+                        <td>{{ $teacher->phone }}</td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="5">No teacher details available</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </td></tr>
         @endif
     </table>
 
@@ -198,6 +222,7 @@
                 <th>#</th>
                 <th>From</th>
                 <th>To</th>
+                <th>Bus Name</th>
             </tr>
         </thead>
         <tbody>
@@ -206,6 +231,7 @@
                 <td>{{ $index + 1 }}</td>
                 <td>{{ $bus->from ?? '-' }}</td>
                 <td>{{ $bus->to ?? '-' }}</td>
+                <td>{{ $bus->bus_name ?? '-' }}</td>
             </tr>
             @endforeach
         </tbody>
@@ -225,6 +251,7 @@
                 <th>#</th>
                 <th>From</th>
                 <th>Train Name</th>
+                <th>Train Number</th>
                 <th>To</th>
             </tr>
         </thead>
@@ -234,6 +261,7 @@
                 <td>{{ $index + 1 }}</td>
                 <td>{{ $train->from ?? '-' }}</td>
                 <td>{{ $train->train_name ?? '-' }}</td>
+                <td>{{ $train->train_number ?? '-' }}</td>
                 <td>{{ $train->to ?? '-' }}</td>
             </tr>
             @endforeach

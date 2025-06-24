@@ -13,33 +13,30 @@ class RegisterController extends Controller
 {
     public function show()
     {
-        $user = User::where('mobile', request()->get('mobile'))->first();
-        if ($user) {
-            return redirect()->route('login');
-        }
         return view('auth.register');
     }
 
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'pincode' => ['required', 'string', 'max:255', 'unique:users'],
+            'pincode' => ['required', 'string', 'max:255'],
             'sangh_name' => ['required', 'string', 'max:255'],
             'sangh_address' => ['required', 'string'],
             'name' => ['required', 'string', 'max:255'], // trustee name
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'reason_note' => ['nullable', 'string'],
             'document' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'mobile' => ['required', 'string', 'max:255', 'unique:users'],
         ]);
 
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'mobile' => $validated['mobile'],
+            'mobile' => $validated['mobile'] ?? null,
             'password' => Hash::make('password'),
             'pincode' => $validated['pincode'],
         ]);
+
+        $user->assignRole('Shangh');
 
         $sangh = $user->sangh()->create([
             'sangh_name' => $validated['sangh_name'],
@@ -50,16 +47,14 @@ class RegisterController extends Controller
 
         $sangh->trustees()->create([
             'first_name' => $validated['name'],
-            'phone' => $validated['mobile'],
+            'phone' => $validated['mobile'] ?? null,
             'email' => $validated['email'],
         ]);
 
         if (isset($request->document)) {
             $sangh->addMediaFromRequest('document')->toMediaCollection('sangh_pdf_document');
         }
-        
-        $user->assignRole('Shangh');
 
-        return Redirect::route('login')->with('success', 'Registration successful! Please login.');
+        return Redirect::route('login')->with('success', 'Registration successful! You will get email once admin will approve your profile.');
     }
 }

@@ -111,10 +111,6 @@ class SanghController extends Controller
                     'jain_family_count' => $request->jain_family_count,
                     'age_group' => $request->age_group,
                     'has_pathshala' => $request->has_pathshala,
-                    'pathshala_first_name' => $request->pathshala_first_name,
-                    'pathshala_last_name' => $request->pathshala_last_name,
-                    'pathshala_email' => $request->pathshala_email,
-                    'pathshala_phone' => $request->pathshala_phone,
                     'has_other_sangh' => $request->has_other_sangh,
                     'bus_transportation' => $request->bus_transportation == 'on' ? 1 : 0,
                     'train_transportation' => $request->train_transportation == 'on' ? 1 : 0,
@@ -158,10 +154,6 @@ class SanghController extends Controller
                     'jain_family_count' => $request->jain_family_count,
                     'age_group' => $request->age_group,
                     'has_pathshala' => $request->has_pathshala,
-                    'pathshala_first_name' => $request->pathshala_first_name,
-                    'pathshala_last_name' => $request->pathshala_last_name,
-                    'pathshala_email' => $request->pathshala_email,
-                    'pathshala_phone' => $request->pathshala_phone,
                     'has_other_sangh' => $request->has_other_sangh,
                     'bus_transportation' => $request->bus_transportation == 'on' ? 1 : 0,
                     'train_transportation' => $request->train_transportation == 'on' ? 1 : 0,
@@ -201,27 +193,39 @@ class SanghController extends Controller
                 }
             }
 
-            // Create bus transportations if any
             if ($request->bus_transportation && $request->bus_transport) {
                 foreach ($request->bus_transport as $busTransportation) {
                     $sangh->busTransportations()->create([
                         'from' => $busTransportation['from'],
                         'to' => $busTransportation['to'],
+                        'bus_name' => $busTransportation['bus_name'],
                     ]);
                 }
             }
 
-            // Create train transportations if any
             if ($request->train_transportation && $request->train_transport) {
                 foreach ($request->train_transport as $trainTransportation) {
                     $sangh->trainTransportations()->create([
                         'from' => $trainTransportation['from'],
                         'train_name' => $trainTransportation['train_name'],
+                        'train_number' => $trainTransportation['train_number'] ?? null,
                         'to' => $trainTransportation['to'],
                     ]);
                 }
             }
 
+            // Remove old teachers and add new ones if has_pathshala
+            $sangh->pathshalaTeachers()->delete();
+            if ($request->has_pathshala && $request->teachers) {
+                foreach ($request->teachers as $teacher) {
+                    $sangh->pathshalaTeachers()->create([
+                        'first_name' => $teacher['first_name'],
+                        'last_name' => $teacher['last_name'],
+                        'email' => $teacher['email'],
+                        'phone' => $teacher['phone'],
+                    ]);
+                }
+            }
 
             DB::commit();
  

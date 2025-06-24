@@ -219,9 +219,11 @@ class Stepper {
                     rows.forEach(row => {
                         const fromInput = row.querySelector('input[name*="[from]"]');
                         const toInput = row.querySelector('input[name*="[to]"]');
+                        const busNameInput = row.querySelector('input[name*="[bus_name]"]');
                         let rowValid = true;
                         if (!fromInput || fromInput.value.trim() === '') rowValid = false;
                         if (!toInput || toInput.value.trim() === '') rowValid = false;
+                        if (!busNameInput || busNameInput.value.trim() === '') rowValid = false;
                         if (rowValid) validRowFound = true;
                         if (fromInput && fromInput.value.trim() === '') {
                             this.showError(fromInput, 'This field is required');
@@ -229,6 +231,10 @@ class Stepper {
                         }
                         if (toInput && toInput.value.trim() === '') {
                             this.showError(toInput, 'This field is required');
+                            isValid = false;
+                        }
+                        if (busNameInput && busNameInput.value.trim() === '') {
+                            this.showError(busNameInput, 'This field is required');
                             isValid = false;
                         }
                     });
@@ -728,6 +734,9 @@ class BusTransportTable {
             <td class="px-2 py-1">
                 <input type="text" name="bus_transport[${count}][to]" class="bus-to-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium">
             </td>
+            <td class="px-2 py-1">
+                <input type="text" name="bus_transport[${count}][bus_name]" class="bus-name-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium">
+            </td>
             <td class="text-center px-2 py-1">
                 <button type="button" class="deleteBusRowBtn text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
             </td>
@@ -743,13 +752,13 @@ class BusTransportTable {
         rows.forEach((row, idx) => {
             const noCell = row.querySelector('td');
             if (noCell) noCell.textContent = idx + 1;
-            
             // Update the array index in the name attributes
             const fromInput = row.querySelector('input[name^="bus_transport["][name$="[from]"]');
             const toInput = row.querySelector('input[name^="bus_transport["][name$="[to]"]');
-            
+            const nameInput = row.querySelector('input[name^="bus_transport["][name$="[bus_name]"]');
             if (fromInput) fromInput.name = `bus_transport[${idx}][from]`;
             if (toInput) toInput.name = `bus_transport[${idx}][to]`;
+            if (nameInput) nameInput.name = `bus_transport[${idx}][bus_name]`;
         });
     }
 }
@@ -818,10 +827,13 @@ class TrainTransportTable {
                 <input type="text" name="train_transport[${this.trainIndex}][from]" class="train-from-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium">
             </td>
             <td class="px-2 py-1">
+                <input type="text" name="train_transport[${this.trainIndex}][to]" class="train-to-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium">
+            </td>
+            <td class="px-2 py-1">
                 <input type="text" name="train_transport[${this.trainIndex}][train_name]" class="train-name-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium">
             </td>
             <td class="px-2 py-1">
-                <input type="text" name="train_transport[${this.trainIndex}][to]" class="train-to-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium">
+                <input type="text" name="train_transport[${this.trainIndex}][train_number]" class="train-number-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium">
             </td>
             <td class="text-center px-2 py-1">
                 <button type="button" class="deleteTrainRowBtn text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
@@ -839,15 +851,88 @@ class TrainTransportTable {
         rows.forEach((row, idx) => {
             const noCell = row.querySelector('td');
             if (noCell) noCell.textContent = idx + 1;
-            
             // Update the array index in the name attributes
             const fromInput = row.querySelector('input[name^="train_transport["][name$="[from]"]');
             const nameInput = row.querySelector('input[name^="train_transport["][name$="[train_name]"]');
+            const numberInput = row.querySelector('input[name^="train_transport["][name$="[train_number]"]');
             const toInput = row.querySelector('input[name^="train_transport["][name$="[to]"]');
-            
             if (fromInput) fromInput.name = `train_transport[${idx}][from]`;
             if (nameInput) nameInput.name = `train_transport[${idx}][train_name]`;
+            if (numberInput) numberInput.name = `train_transport[${idx}][train_number]`;
             if (toInput) toInput.name = `train_transport[${idx}][to]`;
+        });
+    }
+}
+
+// Pathshala Teachers Table Functionality
+class TeachersTable {
+    constructor() {
+        this.teacherIndex = 1;
+        this.init();
+    }
+
+    init() {
+        this.setupAddTeacherButton();
+        this.setupDeleteTeacherButtons();
+        this.updateTeacherRowNumbers();
+    }
+
+    setupAddTeacherButton() {
+        const addBtn = document.getElementById('addTeacherRowBtn');
+        if (addBtn) {
+            addBtn.addEventListener('click', () => this.addTeacherRow());
+        }
+    }
+
+    setupDeleteTeacherButtons() {
+        const tbody = document.getElementById('teachersTbody');
+        if (!tbody) return;
+
+        tbody.addEventListener('click', (e) => {
+            if (e.target.closest('.deleteTeacherRowBtn')) {
+                const row = e.target.closest('tr');
+                if (row) {
+                    row.remove();
+                    this.updateTeacherRowNumbers();
+                }
+            }
+        });
+    }
+
+    addTeacherRow() {
+        const tbody = document.getElementById('teachersTbody');
+        if (!tbody) return;
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="text-center align-middle">${tbody.querySelectorAll('tr').length + 1}</td>
+            <td><input type="text" name="teachers[${this.teacherIndex}][first_name]" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium" required></td>
+            <td><input type="text" name="teachers[${this.teacherIndex}][last_name]" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium" required></td>
+            <td><input type="email" name="teachers[${this.teacherIndex}][email]" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium" required></td>
+            <td><input type="text" name="teachers[${this.teacherIndex}][phone]" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium" required></td>
+            <td class="text-center align-middle"><button type="button" class="deleteTeacherRowBtn text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button></td>
+        `;
+        tbody.appendChild(row);
+        this.teacherIndex++;
+        this.updateTeacherRowNumbers();
+    }
+
+    updateTeacherRowNumbers() {
+        const tbody = document.getElementById('teachersTbody');
+        if (!tbody) return;
+        const rows = tbody.querySelectorAll('tr');
+        rows.forEach((row, idx) => {
+            const noCell = row.querySelector('td');
+            if (noCell) noCell.textContent = idx + 1;
+            // Update the array index in the name attributes
+            const firstNameInput = row.querySelector('input[name^="teachers["][name$="[first_name]"]');
+            const lastNameInput = row.querySelector('input[name^="teachers["][name$="[last_name]"]');
+            const emailInput = row.querySelector('input[name^="teachers["][name$="[email]"]');
+            const phoneInput = row.querySelector('input[name^="teachers["][name$="[phone]"]');
+            if (firstNameInput) firstNameInput.name = `teachers[${idx}][first_name]`;
+            if (lastNameInput) lastNameInput.name = `teachers[${idx}][last_name]`;
+            if (emailInput) emailInput.name = `teachers[${idx}][email]`;
+            if (phoneInput) phoneInput.name = `teachers[${idx}][phone]`;
         });
     }
 }
@@ -868,6 +953,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize train transport table
     const trainTransportTable = new TrainTransportTable();
+
+    // Initialize teachers table
+    const teachersTable = new TeachersTable();
 
     // Age-wise Distribution Of Members total calculation
     const ageTable = document.getElementById('ageDistributionTable');

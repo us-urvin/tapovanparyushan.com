@@ -16,6 +16,7 @@
                             <th class="py-2 text-left text-[#1A2B49] text-sm font-medium">No.</th>
                             <th class="py-2 text-left text-[#1A2B49] text-sm font-medium">From <span class="text-red-500">*</span></th>
                             <th class="py-2 text-left text-[#1A2B49] text-sm font-medium">To <span class="text-red-500">*</span></th>
+                            <th class="py-2 text-left text-[#1A2B49] text-sm font-medium">Bus Name <span class="text-red-500">*</span></th>
                             <th class="py-2 text-left text-[#1A2B49] text-sm font-medium">Actions</th>
                         </tr>
                     </thead>
@@ -32,6 +33,10 @@
                                         <input type="text" name="bus_transport[{{ $index }}][to]" class="bus-to-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium"
                                             value="{{ old('bus_transport.'.$index.'.to', $busTransport->to) }}">
                                     </td>
+                                    <td class="px-2 py-1">
+                                        <input type="text" name="bus_transport[{{ $index }}][bus_name]" class="bus-name-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium"
+                                            value="{{ old('bus_transport.'.$index.'.bus_name', $busTransport->bus_name) }}">
+                                    </td>
                                     <td class="text-center px-2 py-1">
                                         <button type="button" class="deleteBusRowBtn text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
                                     </td>
@@ -47,6 +52,10 @@
                                 <td class="px-2 py-1">
                                     <input type="text" name="bus_transport[0][to]" class="bus-to-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium"
                                         value="{{ old('bus_transport.0.to', '') }}">
+                                </td>
+                                <td class="px-2 py-1">
+                                    <input type="text" name="bus_transport[0][bus_name]" class="bus-name-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium"
+                                        value="{{ old('bus_transport.0.bus_name', '') }}">
                                 </td>
                                 <td class="text-center px-2 py-1">
                                     <button type="button" class="deleteBusRowBtn text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
@@ -74,8 +83,9 @@
                         <tr class="border-b border-[#F3E6C7]">
                             <th class="py-2 text-left text-[#1A2B49] text-sm font-medium">No.</th>
                             <th class="py-2 text-left text-[#1A2B49] text-sm font-medium">From <span class="text-red-500">*</span></th>
-                            <th class="py-2 text-left text-[#1A2B49] text-sm font-medium">Train Name <span class="text-red-500">*</span></th>
                             <th class="py-2 text-left text-[#1A2B49] text-sm font-medium">To <span class="text-red-500">*</span></th>
+                            <th class="py-2 text-left text-[#1A2B49] text-sm font-medium">Train Name <span class="text-red-500">*</span></th>
+                            <th class="py-2 text-left text-[#1A2B49] text-sm font-medium">Train Number</th>
                             <th class="py-2 text-left text-[#1A2B49] text-sm font-medium">Actions</th>
                         </tr>
                     </thead>
@@ -89,12 +99,16 @@
                                             value="{{ old('train_transport.'.$index.'.from', $trainTransport->from) }}">
                                     </td>
                                     <td class="px-2 py-1">
+                                        <input type="text" name="train_transport[{{ $index }}][to]" class="train-to-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium"
+                                            value="{{ old('train_transport.'.$index.'.to', $trainTransport->to) }}">
+                                    </td>
+                                    <td class="px-2 py-1">
                                         <input type="text" name="train_transport[{{ $index }}][train_name]" class="train-name-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium"
                                             value="{{ old('train_transport.'.$index.'.train_name', $trainTransport->train_name) }}">
                                     </td>
                                     <td class="px-2 py-1">
-                                        <input type="text" name="train_transport[{{ $index }}][to]" class="train-to-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium"
-                                            value="{{ old('train_transport.'.$index.'.to', $trainTransport->to) }}">
+                                        <input type="text" name="train_transport[{{ $index }}][train_number]" class="train-number-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium"
+                                            value="{{ old('train_transport.'.$index.'.train_number', $trainTransport->train_number) }}">
                                     </td>
                                     <td class="text-center px-2 py-1">
                                         <button type="button" class="deleteTrainRowBtn text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
@@ -109,12 +123,16 @@
                                         value="{{ old('train_transport.0.from', '') }}">
                                 </td>
                                 <td class="px-2 py-1">
+                                    <input type="text" name="train_transport[0][to]" class="train-to-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium"
+                                        value="{{ old('train_transport.0.to', '') }}">
+                                </td>
+                                <td class="px-2 py-1">
                                     <input type="text" name="train_transport[0][train_name]" class="train-name-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium"
                                         value="{{ old('train_transport.0.train_name', '') }}">
                                 </td>
                                 <td class="px-2 py-1">
-                                    <input type="text" name="train_transport[0][to]" class="train-to-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium"
-                                        value="{{ old('train_transport.0.to', '') }}">
+                                    <input type="text" name="train_transport[0][train_number]" class="train-number-input w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium"
+                                        value="{{ old('train_transport.0.train_number', '') }}">
                                 </td>
                                 <td class="text-center px-2 py-1">
                                     <button type="button" class="deleteTrainRowBtn text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>

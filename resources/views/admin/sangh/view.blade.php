@@ -173,23 +173,33 @@
             <div class="text-lg font-semibold mb-4">Pathshala Information</div>
             <div class="mb-2 text-gray-500 text-sm font-medium mb-4">Does shree sangh have pathshala? <span class="text-black text-base font-semibold">{{ $sangh->has_pathshala ? 'Yes' : 'No' }}</span></div>
             @if($sangh->has_pathshala)
-            <div class="grid grid-cols-2 gap-2">
-                <div>
-                    <div class="text-gray-500 text-sm font-medium mb-1">First Name</div>
-                    <div class="text-black text-base font-semibold">{{ $sangh->pathshala_first_name ?? 'Not specified' }}</div>
-                </div>
-                <div>
-                    <div class="text-gray-500 text-sm font-medium mb-1">Email Address</div>
-                    <div class="text-black text-base font-semibold">{{ $sangh->pathshala_email ?? 'Not specified' }}</div>
-                </div>
-                <div>
-                    <div class="text-gray-500 text-sm font-medium mb-1">Last Name</div>
-                    <div class="text-black text-base font-semibold">{{ $sangh->pathshala_last_name ?? 'Not specified' }}</div>
-                </div>
-                <div>
-                    <div class="text-gray-500 text-sm font-medium mb-1">Phone Number</div>
-                    <div class="text-black text-base font-semibold">{{ $sangh->pathshala_phone ?? 'Not specified' }}</div>
-                </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-[#F3E6C7]">
+                    <thead class="bg-[#F8F5ED]">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">#</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">First Name</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Last Name</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Phone</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-[#F3E6C7]">
+                        @forelse($sangh->pathshalaTeachers as $index => $teacher)
+                        <tr>
+                            <td class="px-4 py-3 text-sm text-gray-500">{{ $index + 1 }}</td>
+                            <td class="px-4 py-3 text-base font-semibold text-[#1A2B49]">{{ $teacher->first_name }}</td>
+                            <td class="px-4 py-3 text-base font-semibold text-[#1A2B49]">{{ $teacher->last_name }}</td>
+                            <td class="px-4 py-3 text-base font-semibold text-[#1A2B49]">{{ $teacher->email }}</td>
+                            <td class="px-4 py-3 text-base font-semibold text-[#1A2B49]">{{ $teacher->phone }}</td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="5" class="text-center text-gray-500">No teacher details available</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
             @endif
         </div>
@@ -238,6 +248,7 @@
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">#</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">From</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">To</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Bus Name</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-[#F3E6C7]">
@@ -246,6 +257,7 @@
                         <td class="px-4 py-3 text-sm text-gray-500">{{ $index + 1 }}</td>
                         <td class="px-4 py-3 text-base font-semibold text-[#1A2B49]">{{ $bus->from ?? '-' }}</td>
                         <td class="px-4 py-3 text-base font-semibold text-[#1A2B49]">{{ $bus->to ?? '-' }}</td>
+                        <td class="px-4 py-3 text-base font-semibold text-[#1A2B49]">{{ $bus->bus_name ?? '-' }}</td>
                     </tr>
                     @endforeach
                 </tbody>
@@ -264,6 +276,7 @@
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">#</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">From</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Train Name</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Train Number</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">To</th>
                     </tr>
                 </thead>
@@ -273,6 +286,7 @@
                         <td class="px-4 py-3 text-sm text-gray-500">{{ $index + 1 }}</td>
                         <td class="px-4 py-3 text-base font-semibold text-[#1A2B49]">{{ $train->from ?? '-' }}</td>
                         <td class="px-4 py-3 text-base font-semibold text-[#1A2B49]">{{ $train->train_name ?? '-' }}</td>
+                        <td class="px-4 py-3 text-base font-semibold text-[#1A2B49]">{{ $train->train_number ?? '-' }}</td>
                         <td class="px-4 py-3 text-base font-semibold text-[#1A2B49]">{{ $train->to ?? '-' }}</td>
                     </tr>
                     @endforeach

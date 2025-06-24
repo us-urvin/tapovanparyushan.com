@@ -24,7 +24,7 @@ return new class extends Migration
             $table->boolean('bhakti_musicians')->default(false);
             $table->boolean('bhakti_group')->default(false);
             $table->boolean('bhakti_instruments')->default(false);
-            $table->string('bhakti_instrument_list')->nullable();
+            $table->json('bhakti_instrument_list')->nullable();
             $table->json('attendance')->nullable();
             $table->boolean('mahatma_sadhu')->default(false);
             $table->boolean('mahatma_sadhviji')->default(false);

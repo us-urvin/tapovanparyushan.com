@@ -7,8 +7,10 @@
     <title>@yield('title', 'Admin Dashboard') | Tapovan Paryushan Aradhana</title>
     @vite('resources/css/app.css')
     @stack('styles')
-    <link rel="stylesheet" href="{{ asset('css/iziToast.min.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/favicon.ico') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
     <style>
         .sidebar {
             transition: all 0.3s ease;
@@ -83,7 +85,7 @@
                                 <span class="nav-text">Dashboard</span>
                             </a>
                         </li>                        
-                    @elseif (Auth::user()->hasRole('Sangh'))
+                    @elseif (Auth::user()->hasRole('Shangh'))
                         <li>
                             <a href="{{ route('sangh.dashboard') }}" class="nav-item {{ request()->routeIs('sangh.dashboard') ? 'bg-[#F3E6C7] text-[#C9A14A]' : 'text-[#1A2B49]' }}">
                                 <i class="fas fa-home nav-icon"></i>
@@ -144,7 +146,7 @@
             </nav>
             <!-- Logout Section -->
             <div class="mt-auto border-t border-[#E5E0D8] pt-4">
-                <form method="POST" action="{{ route('admin.logout') }}">
+                <form id="logout-form" method="POST" action="{{ route('admin.logout') }}">
                     @csrf
                     <button type="submit" class="nav-item w-full text-left text-[#C9A14A] hover:bg-[#F3E6C7]">
                         <i class="fas fa-sign-out-alt nav-icon"></i>
@@ -186,8 +188,9 @@
         </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     @stack('scripts')
-    <script src="{{ asset('js/iziToast.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Sidebar Toggle Functionality
@@ -214,27 +217,65 @@
                 }
             });
 
-            // Toast Notifications
-            @if(session('success'))
-                iziToast.success({
-                    title: 'Success',
-                    message: "{{ session('success') }}",
-                    position: 'topRight',
-                    close: true,
-                    progressBar: true,
-                    timeout: 3000
+            const logoutForm = document.getElementById('logout-form');
+            if (logoutForm) {
+                logoutForm.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: "You will be logged out of your account.",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#C9A14A',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, log out!',
+                        background: '#f8f5ed'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            logoutForm.submit();
+                        }
+                    })
                 });
+            }
+
+            @if(session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: '{{ session('success') }}',
+                    background: '#f8f5ed',
+                    confirmButtonColor: "#C9A14A"
+                })
             @endif
 
             @if(session('error'))
-                iziToast.error({
+                Swal.fire({
+                    icon: 'error',
                     title: 'Error',
-                    message: "{{ session('error') }}",
-                    position: 'topRight',
-                    close: true,
-                    progressBar: true,
-                    timeout: 3000
-                });
+                    text: '{{ session('error') }}',
+                    background: '#f8f5ed',
+                    confirmButtonColor: "#C9A14A"
+                })
+            @endif
+
+            @if(session('info'))
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Info',
+                    text: '{{ session('info') }}',
+                    background: '#f8f5ed',
+                    confirmButtonColor: "#C9A14A"
+                })
+            @endif
+
+            @if(session('warning'))
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Warning',
+                    text: '{{ session('warning') }}',
+                    background: '#f8f5ed',
+                    confirmButtonColor: "#C9A14A"
+                })
             @endif
         });
     </script>

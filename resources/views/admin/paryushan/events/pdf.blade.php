@@ -136,7 +136,13 @@
             </tr>
             <tr class="row">
                 <td class="label">Select the instrument that shree sangh have</td>
-                <td class="value">{{ $event->bhakti_instrument_list ?? '-' }}</td>
+                <td class="value">
+                    @if (!empty($event->bhakti_instrument_list) && is_array($event->bhakti_instrument_list))
+                        {{ collect($event->bhakti_instrument_list)->map(fn($k) => \App\Constants\Constants::BHAKTI_INSTRUMENTS[$k] ?? $k)->implode(', ') }}
+                    @else
+                        -
+                    @endif
+                </td>
             </tr>
         </table>
     </div>

@@ -422,8 +422,8 @@ final class Constants extends Response
     ];
 
     public const SANGH_TYPE = [
-        1 => 'Type 1',
-        2 => 'Type 2',
+        1 => 'India',
+        2 => 'Outside India',
     ];
 
     public const EVENT_YEAR = [
@@ -441,11 +441,17 @@ final class Constants extends Response
     ];
 
     public const STATUS_ACTIVE_TEXT = 'Active';
-    public const STATUS_INACTIVE_TEXT = 'Inactive';
+    public const STATUS_INACTIVE_TEXT = 'In Progress';
 
     public const STATUS = [
         0 => self::STATUS_INACTIVE_TEXT,
         1 => self::STATUS_ACTIVE_TEXT,
         2 => 'Rejected',
+    ];
+
+    public const BHAKTI_INSTRUMENTS = [
+        'tabla' => 'Tabla',
+        'harmonium' => 'Harmonium',
+        'casio' => 'Casio',
     ];
 }

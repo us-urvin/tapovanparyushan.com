@@ -93,3 +93,7 @@ Route::middleware(['auth'])->prefix('admin/centers')->name('admin.centers.')->gr
     Route::post('/{center}/status', [CenterController::class, 'changeStatus'])->name('status');
 });
 
+Route::get('/login/districts', [LoginController::class, 'getDistricts'])->name('login.districts');
+Route::get('/login/sanghs', [LoginController::class, 'getSanghsByDistrict'])->name('login.sanghs');
+Route::get('/login/sanghs-by-pincode', [LoginController::class, 'getSanghsByPincode'])->name('login.sanghsByPincode');
+Route::get('/login/sangh-info', [LoginController::class, 'getSanghInfo'])->name('login.sanghInfo');

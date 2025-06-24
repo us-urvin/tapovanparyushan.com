@@ -58,6 +58,7 @@ class Event extends Model implements HasMedia
         'bhakti_musicians' => 'boolean',
         'bhakti_group' => 'boolean',
         'bhakti_instruments' => 'boolean',
+        'bhakti_instrument_list' => 'array',
         'has_upashray' => 'boolean',
         'is_permanent_upashray' => 'boolean',
         'is_temporary_upashray' => 'boolean',

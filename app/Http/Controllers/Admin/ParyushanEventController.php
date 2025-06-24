@@ -37,6 +37,10 @@ class ParyushanEventController extends Controller
             $data = $request->except('_token');
             $data['sangh_id'] = $request['sangh_id'] ?? Auth::user()->sangh->id;
             $data['terms_agree'] = $data['terms_agree'] == 'on' ? 1 : 0;
+            // Store bhakti_instrument_list as array (JSON)
+            if (isset($data['bhakti_instrument_list'])) {
+                $data['bhakti_instrument_list'] = array_values(array_filter($data['bhakti_instrument_list']));
+            }
             unset($data['sangh_name']);
             $event = Event::create($data);
 
@@ -56,7 +60,7 @@ class ParyushanEventController extends Controller
 
     public function datatable(Request $request)
     {
-        $query = Event::with('sangh')
+        $query = Event::with(['sangh', 'centerAssignments'])
             ->select('events.*');
 
         if (Auth::user()->hasRole('Center')) {
@@ -87,6 +91,22 @@ class ParyushanEventController extends Controller
                     return $row->sangh->sangh_name ?? 'N/A';
                 }
                 return 'N/A';
+            })
+            ->addColumn('sub_admin_status', function ($row) {
+                if (!Auth::user()->hasRole('Admin')) return '';
+                // Find the current assigned center (the one with status pending or accepted, or the latest assignment)
+                $currentAssignment = $row->centerAssignments->whereIn('status', ['pending', 'accepted'])->sortByDesc('assigned_at')->first();
+                if (!$currentAssignment) {
+                    $currentAssignment = $row->centerAssignments->sortByDesc('assigned_at')->first();
+                }
+                if (!$currentAssignment) {
+                    return '<span class="text-gray-400">-</span>';
+                }
+                $status = $currentAssignment->status;
+                $centerName = $currentAssignment->center ? $currentAssignment->center->center_name : '-';
+                $dotColor = $status === 'accepted' ? 'bg-green-500' : ($status === 'rejected' ? 'bg-red-500' : 'bg-yellow-500');
+                $label = ucfirst($status);
+                return '<span class="inline-flex items-center gap-1"><span class="w-3 h-3 rounded-full ' . $dotColor . ' inline-block"></span> <span class="font-semibold">' . $centerName . ' - ' . $label . '</span></span>';
             })
             ->addColumn('event', function ($row) {
                 return $row->event_year;
@@ -131,6 +151,20 @@ class ParyushanEventController extends Controller
                 }
                 return '<span class="' . $statusClass . ' px-3 py-1 rounded-full text-xs font-semibold">' . ucfirst(\App\Constants\Constants::STATUS[$row->status]) . '</span>';
             })
+            ->addColumn('assign_sub_admin', function ($row) {
+                if (!Auth::user()->hasRole('Admin')) return '';
+                if ($row->status != 1) {
+                    return '<span class="text-gray-400">-</span>';
+                }
+                $centers = \App\Models\Center::where('status', 1)->pluck('id', 'center_name');
+                $options = '<option value="">Assign To Sub Admin</option>';
+                foreach ($centers as $center => $id) {
+                    $assignment = $row->centerAssignments->where('center_id', $id)->first();
+                    $selected = ($assignment && in_array($assignment->status, ['pending','accepted'])) ? 'selected' : '';
+                    $options .= '<option value="' . $id . '" ' . $selected . '>' . $center . '</option>';
+                }
+                return '<select class="assign-to-listing bg-white border border-[#F3E6C7] px-2 py-1 rounded focus:ring-2 focus:ring-[#C9A14A] focus:outline-none transition" data-id="' . $row->id . '">' . $options . '</select>';
+            })
             ->addColumn('actions', function ($row) {
                 if (Auth::user()->hasRole('Center')) {
                     return '<div class="flex gap-2">
@@ -151,7 +185,7 @@ class ParyushanEventController extends Controller
                     </a>
                 </div>';
             })
-            ->rawColumns(['status', 'actions'])
+            ->rawColumns(['status', 'actions', 'sub_admin_status', 'assign_sub_admin'])
             ->make(true);
     }
 
@@ -165,6 +199,10 @@ class ParyushanEventController extends Controller
             $event = Event::findOrFail($request->id);
             $event->status = $request->status;
             $event->save();
+            // If event is not approved, delete all center assignments
+            if ($event->status != 1) {
+                \App\Models\EventCenterAssignment::where('event_id', $event->id)->delete();
+            }
 
             return response()->json(['success' => true, 'message' => 'Status updated successfully']);
         } catch (\Exception $e) {
@@ -211,6 +249,10 @@ class ParyushanEventController extends Controller
             $event = Event::findOrFail($id);
             $data = $request->except('_token', '_method');
             $data['terms_agree'] = $data['terms_agree'] == 'on' ? 1 : 0;
+            // Store bhakti_instrument_list as array (JSON)
+            if (isset($data['bhakti_instrument_list'])) {
+                $data['bhakti_instrument_list'] = array_values(array_filter($data['bhakti_instrument_list']));
+            }
             unset($data['sangh_name']);
             $event->update($data);
             DB::commit();
@@ -248,6 +290,10 @@ class ParyushanEventController extends Controller
             'center_id' => 'required|exists:centers,id',
         ]);
         $event = Event::findOrFail($eventId);
+        // Delete any existing assignments for this event with status 'pending'
+        \App\Models\EventCenterAssignment::where('event_id', $event->id)
+            ->where('status', 'pending')
+            ->delete();
         EventCenterAssignment::create([
             'event_id' => $event->id,
             'center_id' => $request->center_id,

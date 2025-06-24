@@ -287,6 +287,8 @@ class ParyushanEvents {
             },
             dom: 'rtip'
         });
+        // Assign to global variable for reload after assignment change
+        window.paryushanEventsTable = this.table;
     }
 
     getTableColumns() {
@@ -303,7 +305,15 @@ class ParyushanEvents {
             { data: 'email', name: 'email', searchable: true, sortable: true },
             { data: 'mobile', name: 'mobile', searchable: false, sortable: true },
             { data: 'country', name: 'country', searchable: false, sortable: true },
-            { data: 'status', name: 'status', searchable: false, sortable: false },
+            { data: 'status', name: 'status', searchable: false, sortable: false }
+        );
+
+        if (window.isAdmin) {
+            columns.push({ data: 'sub_admin_status', name: 'sub_admin_status', orderable: false, searchable: false });
+            columns.push({ data: 'assign_sub_admin', name: 'assign_sub_admin', orderable: false, searchable: false });
+        }
+
+        columns.push(
             { data: 'actions', name: 'actions', searchable: false, sortable: false }
         );
 
@@ -314,11 +324,19 @@ class ParyushanEvents {
         const eventFilter = $('#eventFilter');
         eventFilter.empty();
         eventFilter.append('<option value="">All Events</option>');
-        
         // Add events from EVENT_YEAR constant
         Object.entries(window.eventYears).forEach(([year, label]) => {
             eventFilter.append(`<option value="${year}">${label}</option>`);
         });
+        // Set default to current year if present
+        const currentYear = new Date().getFullYear();
+        if (window.eventYears[currentYear]) {
+            eventFilter.val(currentYear);
+            // If DataTable is initialized, reload with filter
+            if (this.table) {
+                this.table.ajax.reload();
+            }
+        }
     }
 
     setupEventListeners() {
@@ -346,6 +364,10 @@ class ParyushanEvents {
         // Status update handler for event status (admin)
         $(document).on('change', '.status-select', (e) => {
             this.handleStatusUpdate(e);
+            // Refresh DataTable after status change to update columns (e.g., Assign Sub Admin)
+            if (this.table) {
+                this.table.ajax.reload(null, false);
+            }
         });
 
         // Assignment status update handler for center users
@@ -353,6 +375,7 @@ class ParyushanEvents {
             const select = $(e.currentTarget);
             const eventId = select.data('event-id');
             const status = select.val();
+            
             $.ajax({
                 url: '/sangh/paryushan/events/update-assignment-status',
                 method: 'POST',
@@ -397,6 +420,44 @@ class ParyushanEvents {
             const id = $(e.currentTarget).data('id');
             this.handleDelete(id);
         });
+
+        // Assign to sub admin from listing
+        $(document).on('change', '.assign-to-listing', function() {
+            const select = $(this);
+            const eventId = select.data('id');
+            const centerId = select.val();
+            if (!centerId) return;
+            $.ajax({
+                url: `/sangh/paryushan/events/${eventId}/assign-center`,
+                method: 'POST',
+                data: {
+                    _token: window.csrfToken,
+                    center_id: centerId
+                },
+                success: function(response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: response.message || 'Assigned center successfully.',
+                        background: '#f8f5ed',
+                        confirmButtonColor: '#C9A14A'
+                    });
+                    // Refresh DataTable after assignment change
+                    if (window.paryushanEventsTable) {
+                        window.paryushanEventsTable.ajax.reload(null, false);
+                    }
+                },
+                error: function(xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: xhr.responseJSON?.message || 'Failed to assign event',
+                        background: '#f8f5ed',
+                        confirmButtonColor: '#C9A14A'
+                    });
+                }
+            });
+        });
     }
 
     loadEvents() {
@@ -435,6 +496,10 @@ class ParyushanEvents {
                 if (response.success) {
                     this.showNotification('success', 'Success', response.message);
                     this.updateStatusStyles(select, status);
+                    // Refresh DataTable after status change to update Sub Admin Status and assignment columns
+                    if (window.paryushanEventsTable) {
+                        window.paryushanEventsTable.ajax.reload(null, false);
+                    }
                 }
             },
             error: (xhr) => {
@@ -454,10 +519,12 @@ class ParyushanEvents {
     }
 
     showNotification(type, title, message) {
-        iziToast[type]({
+        Swal.fire({
+            icon: type,
             title: title,
-            message: message,
-            position: 'topRight'
+            text: message,
+            background: '#f8f5ed',
+            confirmButtonColor: '#C9A14A'
         });
     }
 
@@ -472,40 +539,32 @@ class ParyushanEvents {
 
     handleDelete(id) {
         const self = this;
-        iziToast.question({
-            timeout: 20000,
-            close: false,
-            overlay: true,
-            displayMode: 'once',
-            id: 'question',
-            zindex: 999,
+        Swal.fire({
             title: 'Delete Confirmation',
-            message: 'Are you sure you want to delete this event?',
-            position: 'center',
-            buttons: [
-                ['<button><b>YES</b></button>', function (instance, toast) {
-                    $.ajax({
-                        url: `/sangh/paryushan/events/${id}`,
-                        type: 'DELETE',
-                        data: { _token: window.csrfToken },
-                        success: function(res) {
-                            if (res.success) {
-                                self.showNotification('success', 'Deleted', res.message);
-                                self.table.ajax.reload(null, false);
-                            } else {
-                                self.showNotification('error', 'Error', res.message || 'Failed to delete event.');
-                            }
-                        },
-                        error: function(xhr) {
-                            self.showNotification('error', 'Error', xhr.responseJSON?.message || 'Failed to delete event.');
+            text: 'Are you sure you want to delete this event?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#C9A14A',
+            cancelButtonColor: '#d33'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: `/sangh/paryushan/events/${id}`,
+                    type: 'DELETE',
+                    data: { _token: window.csrfToken },
+                    success: function(res) {
+                        if (res.success) {
+                            self.showNotification('success', 'Deleted', res.message);
+                            self.table.ajax.reload(null, false);
+                        } else {
+                            self.showNotification('error', 'Error', res.message || 'Failed to delete event.');
                         }
-                    });
-                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                }, true],
-                ['<button>Cancel</button>', function (instance, toast) {
-                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                }]
-            ]
+                    },
+                    error: function(xhr) {
+                        self.showNotification('error', 'Error', xhr.responseJSON?.message || 'Failed to delete event.');
+                    }
+                });
+            }
         });
     }
 }
@@ -520,5 +579,14 @@ $(document).ready(() => {
     // Initialize events table if it exists
     if (document.getElementById('eventTable')) {
         new ParyushanEvents();
+    }
+
+    // Initialize select2 for bhakti_instrument_list
+    if ($('#bhakti_instrument_list').length) {
+        $('#bhakti_instrument_list').select2({
+            placeholder: 'Select instruments',
+            allowClear: true,
+            width: '100%'
+        });
     }
 });

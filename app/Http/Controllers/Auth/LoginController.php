@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use App\Models\Sangh;
 
 class LoginController extends Controller
 {
@@ -89,7 +90,7 @@ class LoginController extends Controller
     public function showOtpForm()
     {
         if (!Session::has('mobile_number')) {
-            return redirect()->route('login')->with('error', 'Please enter your mobile number first.');
+            return redirect()->route('login');
         }
         $otp = Otp::where('mobile', Session::get('mobile_number'))->where('is_used', 0)->where('expires_at', '>', Carbon::now())->pluck('otp')->first();
         return view('auth.otp-verify')->with('temp_otp', $otp);
@@ -98,7 +99,7 @@ class LoginController extends Controller
     public function verifyOtp(Request $request)
     {
         if (!Session::has('mobile_number')) {
-            return redirect()->route('login')->with('error', 'Please enter your mobile number first.');
+            return redirect()->route('login');
         }
 
         $request->validate([
@@ -144,9 +145,74 @@ class LoginController extends Controller
             // Log the user in
             Auth::login($user);
             return redirect()->route('sangh.dashboard');
-        } else {
-            // User needs to register
-            return redirect()->route('register', ['mobile' => $mobileNumber]);
         }
+    }
+
+    public function getDistricts()
+    {
+        // Return as array of strings (district names)
+        $districts = Sangh::whereNotNull('district')
+            ->where('district', '!=', '')
+            ->select('district')
+            ->distinct()
+            ->orderBy('district')
+            ->pluck('district');
+
+        return response()->json($districts);
+    }
+
+    public function getSanghsByDistrict(Request $request)
+    {
+        $request->validate([
+            'district' => 'required|string'
+        ]);
+
+        $sanghs = Sangh::where('district', $request->district)
+            ->orderBy('sangh_name')
+            ->get(['id', 'sangh_name', 'pincode']);
+
+        return response()->json([
+            'success' => true,
+            'data' => $sanghs
+        ]);
+    }
+
+    public function getSanghsByPincode(Request $request)
+    {
+        $request->validate(['pincode' => 'required|string']);
+        $users = \App\Models\User::where('pincode', $request->pincode)
+            ->where('status', 'accepted')
+            ->whereHas('roles', function($q) { $q->where('name', 'Shangh'); })
+            ->with('sangh')
+            ->get();
+
+        $sanghs = $users->map(function($user) {
+            return $user->sangh ? [
+                'id' => $user->sangh->id,
+                'sangh_name' => $user->sangh->sangh_name,
+                'pincode' => $user->pincode,
+            ] : null;
+        })->filter()->values();
+
+        return response()->json($sanghs);
+    }
+
+    public function getSanghInfo(Request $request)
+    {
+        $request->validate(['id' => 'required|integer']);
+        $sangh = \App\Models\Sangh::with('user')->find($request->id);
+        if (!$sangh) {
+            return response()->json(['success' => false, 'message' => 'Sangh not found'], 404);
+        }
+        $user = $sangh->user;
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'sangh_name' => $sangh->sangh_name,
+                'trustee_name' => $user ? $user->name : '',
+                'email' => $user ? $user->email : '',
+                'mobile' => $user ? $user->mobile : '',
+            ]
+        ]);
     }
 }

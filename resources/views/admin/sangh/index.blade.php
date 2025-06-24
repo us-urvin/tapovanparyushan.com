@@ -96,7 +96,7 @@
 @push('scripts')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/izitoast/dist/js/iziToast.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 $(function() {
     var table = $('#sanghTable').DataTable({
@@ -135,46 +135,40 @@ $(function() {
                 status: status
             },
             success: function(res) {
-                iziToast.success({ title: 'Success', message: 'Status updated!' });
+                Swal.fire({ icon: 'success', title: 'Success', text: 'Status updated!' });
                 table.ajax.reload(null, false);
             },
             error: function() {
-                iziToast.error({ title: 'Error', message: 'Failed to update status.' });
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to update status.' });
             }
         });
     });
     $(document).on('click', '.deleteSanghBtn', function() {
         var userId = $(this).data('user-id');
-        iziToast.question({
-            timeout: 20000,
-            close: false,
-            overlay: true,
-            displayMode: 'once',
-            id: 'question',
-            zindex: 999,
+        Swal.fire({
             title: 'Delete Confirmation',
-            message: 'Are you sure you want to delete this Sangh?',
-            position: 'center',
-            buttons: [
-                ['<button><b>YES</b></button>', function (instance, toast) {
-                    $.ajax({
-                        url: '/admin/sangh/' + userId,
-                        type: 'DELETE',
-                        data: { _token: '{{ csrf_token() }}' },
-                        success: function(res) {
-                            iziToast.success({ title: 'Deleted', message: 'Sangh deleted successfully.' });
-                            $('#sanghTable').DataTable().ajax.reload(null, false);
-                        },
-                        error: function() {
-                            iziToast.error({ title: 'Error', message: 'Failed to delete Sangh.' });
-                        }
-                    });
-                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                }, true],
-                ['<button>Cancel</button>', function (instance, toast) {
-                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                }]
-            ]
+            text: 'Are you sure you want to delete this Sangh?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#C9A14A',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '/admin/sangh/' + userId,
+                    type: 'DELETE',
+                    data: { _token: '{{ csrf_token() }}' },
+                    success: function(res) {
+                        Swal.fire({ icon: 'success', title: 'Deleted', text: 'Sangh deleted successfully.' });
+                        $('#sanghTable').DataTable().ajax.reload(null, false);
+                    },
+                    error: function() {
+                        Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to delete Sangh.' });
+                    }
+                });
+            }
         });
     });
     $(document).on('click', '.edit-btn', function() {
@@ -184,7 +178,7 @@ $(function() {
     $(document).on('click', '.viewSanghBtn', function() {
         var userId = $(this).data('user-id');
         // TODO: Open view modal and load details via AJAX
-        iziToast.info({ title: 'View', message: 'View modal coming soon.' });
+        Swal.fire({ icon: 'info', title: 'View', text: 'View modal coming soon.' });
     });
 });
 </script>

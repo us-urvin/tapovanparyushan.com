@@ -90,28 +90,44 @@
             <!-- Teacher's Details will be toggled by JS -->
             <div id="teachersDetailsSection" style="display:none">
                 <div class="mb-2 text-[#1A2B49] text-sm font-semibold">Teacher's Details</div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                    <div>
-                        <label class="block text-[#1A2B49] text-sm font-medium mb-1">First Name <span class="text-red-500">*</span></label>
-                        <input type="text" name="pathshala_first_name" placeholder="First name" class="w-full bg-white border {{ $errors->has('pathshala_first_name') ? 'border-red-500' : 'border-[#F3E6C7]' }} rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium"
-                            value="{{ old('pathshala_first_name', $sangh->pathshala_first_name ?? '') }}">
-                    </div>
-                    <div>
-                        <label class="block text-[#1A2B49] text-sm font-medium mb-1">Last Name <span class="text-red-500">*</span></label>
-                        <input type="text" name="pathshala_last_name" placeholder="Last name" class="w-full bg-white border {{ $errors->has('pathshala_last_name') ? 'border-red-500' : 'border-[#F3E6C7]' }} rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium"
-                            value="{{ old('pathshala_last_name', $sangh->pathshala_last_name ?? '') }}">
-                    </div>
-                    <div>
-                        <label class="block text-[#1A2B49] text-sm font-medium mb-1">Enter Email Address <span class="text-red-500">*</span></label>
-                        <input type="email" name="pathshala_email" placeholder="Email Address" class="w-full bg-white border {{ $errors->has('pathshala_email') ? 'border-red-500' : 'border-[#F3E6C7]' }} rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium"
-                            value="{{ old('pathshala_email', $sangh->pathshala_email ?? '') }}">
-                    </div>
-                    <div>
-                        <label class="block text-[#1A2B49] text-sm font-medium mb-1">Enter Phone Number <span class="text-red-500">*</span></label>
-                        <input type="text" name="pathshala_phone" placeholder="Phone Number" class="w-full bg-white border {{ $errors->has('pathshala_phone') ? 'border-red-500' : 'border-[#F3E6C7]' }} rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium"
-                            value="{{ old('pathshala_phone', $sangh->pathshala_phone ?? '') }}">
-                    </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm bg-[#F8F5ED] rounded-lg" id="teachersTable">
+                        <thead>
+                            <tr class="border-b border-[#F3E6C7]">
+                                <th class="py-2 text-left text-[#1A2B49] text-sm font-medium">No.</th>
+                                <th class="py-2 text-left text-[#1A2B49] text-sm font-medium">First Name <span class="text-red-500">*</span></th>
+                                <th class="py-2 text-left text-[#1A2B49] text-sm font-medium">Last Name <span class="text-red-500">*</span></th>
+                                <th class="py-2 text-left text-[#1A2B49] text-sm font-medium">Email <span class="text-red-500">*</span></th>
+                                <th class="py-2 text-left text-[#1A2B49] text-sm font-medium">Phone <span class="text-red-500">*</span></th>
+                                <th class="py-2 text-center text-[#1A2B49] text-sm font-medium">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teachersTbody">
+                            @if(isset($sangh->has_pathshala) && $sangh->has_pathshala && count($sangh->pathshalaTeachers) > 0)
+                                @foreach($sangh->pathshalaTeachers as $index => $teacher)
+                                    <tr>
+                                        <td class="text-center align-middle px-2 py-1">{{ $index + 1 }}</td>
+                                        <td class="px-2 py-1"><input type="text" name="teachers[{{ $index }}][first_name]" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium" value="{{ old('teachers.'.$index.'.first_name', $teacher->first_name) }}" required></td>
+                                        <td class="px-2 py-1"><input type="text" name="teachers[{{ $index }}][last_name]" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium" value="{{ old('teachers.'.$index.'.last_name', $teacher->last_name) }}" required></td>
+                                        <td class="px-2 py-1"><input type="email" name="teachers[{{ $index }}][email]" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium" value="{{ old('teachers.'.$index.'.email', $teacher->email) }}" required></td>
+                                        <td class="px-2 py-1"><input type="text" name="teachers[{{ $index }}][phone]" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium" value="{{ old('teachers.'.$index.'.phone', $teacher->phone) }}" required></td>
+                                        <td class="text-center align-middle px-2 py-1"><button type="button" class="deleteTeacherRowBtn text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button></td>
+                                    </tr>
+                                @endforeach
+                            @else
+                                <tr>
+                                    <td class="text-center align-middle px-2 py-1">1</td>
+                                    <td class="px-2 py-1"><input type="text" name="teachers[0][first_name]" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium" value="{{ old('teachers.0.first_name', '') }}" required></td>
+                                    <td class="px-2 py-1"><input type="text" name="teachers[0][last_name]" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium" value="{{ old('teachers.0.last_name', '') }}" required></td>
+                                    <td class="px-2 py-1"><input type="email" name="teachers[0][email]" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium" value="{{ old('teachers.0.email', '') }}" required></td>
+                                    <td class="px-2 py-1"><input type="text" name="teachers[0][phone]" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 text-[#1A2B49] text-sm font-medium" value="{{ old('teachers.0.phone', '') }}" required></td>
+                                    <td class="text-center align-middle px-2 py-1"><button type="button" class="deleteTeacherRowBtn text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button></td>
+                                </tr>
+                            @endif
+                        </tbody>
+                    </table>
                 </div>
+                <button type="button" id="addTeacherRowBtn" class="mt-4 bg-[#C9A14A] text-white px-6 py-2 rounded-lg font-semibold hover:bg-[#b38e3c] transition flex items-center gap-2"><i class="fa fa-plus"></i> Add Row</button>
             </div>
         </div>
 

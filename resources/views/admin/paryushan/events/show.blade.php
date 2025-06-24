@@ -29,7 +29,8 @@
                         @endif
                     </button>
                 @endif
-                <!-- Assignment Dropdown -->
+                <!-- Assignment Dropdown: Only show if event is approved -->
+                @if($event->status == 1)
                 <select class="assing-to bg-white border border-[#F3E6C7] px-4 py-2 rounded-lg font-semibold focus:ring-2 focus:ring-[#C9A14A] focus:outline-none transition" data-id="{{ $event->id }}">
                     <option value="">Assing To Sub Admin</option>
                     @foreach ($centers as $center => $id)
@@ -39,6 +40,7 @@
                         <option value="{{ $id }}" @if($assignment && in_array($assignment->status, ['pending','accepted'])) selected @endif>{{ $center }}</option>
                     @endforeach
                 </select>
+                @endif
                 <select class="status-select bg-white border border-[#F3E6C7] px-4 py-2 rounded-lg font-semibold focus:ring-2 focus:ring-[#C9A14A] focus:outline-none transition" data-id="{{ $event->id }}">
                     <option value="0" {{ $event->status == 0 ? 'selected' : '' }}>Pending</option>
                     <option value="1" {{ $event->status == 1 ? 'selected' : '' }}>Approved</option>
@@ -155,7 +157,13 @@
                 </div>
                 <div class="w-full md:w-1/2 mt-2">
                     <div class="text-sm text-[#888]">Select the instrument that shree sangh have</div>
-                    <div class="font-medium text-base text-[#222]">{{ $event->bhakti_instrument_list ?? '-' }}</div>
+                    <div class="font-medium text-base text-[#222]">
+                        @if (!empty($event->bhakti_instrument_list) && is_array($event->bhakti_instrument_list))
+                            {{ collect($event->bhakti_instrument_list)->map(fn($k) => \App\Constants\Constants::BHAKTI_INSTRUMENTS[$k] ?? $k)->implode(', ') }}
+                        @else
+                            -
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
@@ -256,26 +264,24 @@
                 },
                 success: function(response) {
                     if (response.success) {
-                        iziToast.success({
+                        Swal.fire({
+                            icon: 'success',
                             title: 'Success',
-                            message: response.message,
-                            position: 'topRight'
+                            text: response.message || 'Status updated successfully.',
+                            background: '#f8f5ed',
+                            confirmButtonColor: '#C9A14A'
+                        }).then(() => {
+                            location.reload();
                         });
-                        
-                        // Update status styles
-                        const statusClasses = {
-                            0: 'text-yellow-600 bg-yellow-50',
-                            1: 'text-blue-500 bg-blue-50',
-                            2: 'text-red-500 bg-red-50'
-                        };
-                        select.removeClass().addClass('status-select ' + statusClasses[status] + ' px-4 py-2 rounded-lg font-semibold');
                     }
                 },
                 error: function(xhr) {
-                    iziToast.error({
+                    Swal.fire({
+                        icon: 'error',
                         title: 'Error',
-                        message: xhr.responseJSON?.message || 'Failed to update status',
-                        position: 'topRight'
+                        text: xhr.responseJSON?.message || 'Failed to update status',
+                        background: '#f8f5ed',
+                        confirmButtonColor: '#C9A14A'
                     });
                 }
             });
@@ -295,19 +301,24 @@
                     center_id: centerId
                 },
                 success: function(response) {
-                    iziToast.success({
+                    Swal.fire({
+                        icon: 'success',
                         title: 'Success',
-                        message: response.message || 'Event assigned to center successfully.',
-                        position: 'topRight'
+                        text: response.message || 'Event assigned to center successfully.',
+                        background: '#f8f5ed',
+                        confirmButtonColor: '#C9A14A'
+                    }).then(() => {
+                        // Always show the assign sub admin dropdown after assignment if event is approved
+                        location.reload();
                     });
-                    // Optionally disable select after assignment
-                    // select.prop('disabled', true);
                 },
                 error: function(xhr) {
-                    iziToast.error({
+                    Swal.fire({
+                        icon: 'error',
                         title: 'Error',
-                        message: xhr.responseJSON?.message || 'Failed to assign event',
-                        position: 'topRight'
+                        text: xhr.responseJSON?.message || 'Failed to assign event',
+                        background: '#f8f5ed',
+                        confirmButtonColor: '#C9A14A'
                     });
                 }
             });
