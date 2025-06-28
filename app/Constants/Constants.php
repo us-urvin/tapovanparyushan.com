@@ -454,4 +454,10 @@ final class Constants extends Response
         'harmonium' => 'Harmonium',
         'casio' => 'Casio',
     ];
+
+    public const PRAVACHAN_LANGUAGE = [
+        1 => 'Hindi',
+        2 => 'Gujarati',
+        3 => 'Both',
+    ];
 }

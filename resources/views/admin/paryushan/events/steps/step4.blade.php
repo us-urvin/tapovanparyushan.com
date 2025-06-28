@@ -18,33 +18,27 @@
                             <td class="px-4 py-2">Pratikraman</td>
                             <td class="px-4 py-2"><input type="number" name="attendance[pratikraman][morning]" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2"
                             value="{{ old('attendance.pratikraman.morning', $event->attendance['pratikraman']['morning'] ?? '') }}"></td>
-                            <td class="px-4 py-2"><input type="number" name="attendance[pratikraman][afternoon]" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2"
-                            value="{{ old('attendance.pratikraman.afternoon', $event->attendance['pratikraman']['afternoon'] ?? '') }}"></td>
+                            <td class="px-4 py-2">-</td>
                             <td class="px-4 py-2"><input type="number" name="attendance[pratikraman][evening]" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2"
                             value="{{ old('attendance.pratikraman.evening', $event->attendance['pratikraman']['evening'] ?? '') }}"></td>
                         </tr>
                         <tr>
                             <td class="px-4 py-2">Pravachan</td>
-                            <td class="px-4 py-2"><input type="number" name="attendance[pravachan][morning]" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2"
-                            value="{{ old('attendance.pravachan.morning', $event->attendance['pravachan']['morning'] ?? '') }}"></td>
+                            <td class="px-4 py-2">-</td>
                             <td class="px-4 py-2"><input type="number" name="attendance[pravachan][afternoon]" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2"
                             value="{{ old('attendance.pravachan.afternoon', $event->attendance['pravachan']['afternoon'] ?? '') }}"></td>
-                            <td class="px-4 py-2"><input type="number" name="attendance[pravachan][evening]" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2"
-                            value="{{ old('attendance.pravachan.evening', $event->attendance['pravachan']['evening'] ?? '') }}"></td>
+                            <td class="px-4 py-2">-</td>
                         </tr>
                         <tr>
                             <td class="px-4 py-2">Bhakti-Bhavana</td>
-                            <td class="px-4 py-2"><input type="number" name="attendance[bhakti][morning]" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2"
-                            value="{{ old('attendance.bhakti.morning', $event->attendance['bhakti']['morning'] ?? '') }}"></td>
-                            <td class="px-4 py-2"><input type="number" name="attendance[bhakti][afternoon]" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2"
-                            value="{{ old('attendance.bhakti.afternoon', $event->attendance['bhakti']['afternoon'] ?? '') }}"></td>
+                            <td class="px-4 py-2">-</td>
+                            <td class="px-4 py-2">-</td>
                             <td class="px-4 py-2"><input type="number" name="attendance[bhakti][evening]" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2"
                             value="{{ old('attendance.bhakti.evening', $event->attendance['bhakti']['evening'] ?? '') }}"></td>
                         </tr>
                         <tr>
                             <td class="px-4 py-2">Other Activities</td>
-                            <td class="px-4 py-2"><input type="number" name="attendance[other][morning]" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2"
-                            value="{{ old('attendance.other.morning', $event->attendance['other']['morning'] ?? '') }}"></td>
+                            <td class="px-4 py-2">-</td>
                             <td class="px-4 py-2"><input type="number" name="attendance[other][afternoon]" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2"
                             value="{{ old('attendance.other.afternoon', $event->attendance['other']['afternoon'] ?? '') }}"></td>
                             <td class="px-4 py-2"><input type="number" name="attendance[other][evening]" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2"

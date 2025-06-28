@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ParyushanEventController extends Controller
 {
@@ -220,16 +221,9 @@ class ParyushanEventController extends Controller
     public function downloadPdf($id)
     {
         $event = Event::with('sangh')->findOrFail($id);
-        $media = $event->getFirstMedia('event_pdf_document');
-        
-        if (!$media) {
-            return redirect()->back()->with('error', 'PDF document not found.');
-        }
-
-        return response()->download($media->getPath(), $media->file_name);
-        // $logo = public_path('images/logo.png');
-        // $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.paryushan.events.pdf', compact('event', 'logo'));
-        // return $pdf->download('event-details-' . $event->id . '.pdf');
+        $logo = public_path('images/logo.png');
+        $pdf = Pdf::loadView('admin.paryushan.events.pdf', compact('event', 'logo'));
+        return $pdf->download('event-details-' . $event->id . '.pdf');
     }
 
     public function edit($id)

@@ -49,8 +49,12 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label class="block text-[#1A2B49] text-sm font-medium mb-1">What is the prefered language for pravachan?</label>
-                    <input type="text" name="pravachan_language" placeholder="Gujarati" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#C9A14A]"
-                    value="{{ old('pravachan_language', $event->pravachan_language ?? '') }}">
+                    <select name="pravachan_language" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#C9A14A]">
+                        <option value="">Select Language</option>
+                        @foreach(\App\Constants\Constants::PRAVACHAN_LANGUAGE as $key => $label)
+                            <option value="{{ $key }}" {{ old('pravachan_language', $event->pravachan_language ?? '') == $key ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
+                    </select>
                 </div>
             </div>
         </div>

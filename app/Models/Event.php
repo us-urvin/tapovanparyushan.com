@@ -52,6 +52,7 @@ class Event extends Model implements HasMedia
         'member_count' => 'integer',
         'willing_to_celebrate' => 'boolean',
         'contact_person' => 'array',
+        'pravachan_language' => 'integer',
         'pratikraman_proficient' => 'boolean',
         'pratikraman_present' => 'boolean',
         'pratikraman_how_many' => 'integer',
@@ -98,5 +99,14 @@ class Event extends Model implements HasMedia
     public function centerAssignments()
     {
         return $this->hasMany(\App\Models\EventCenterAssignment::class);
+    }
+
+    public function getPravachanLanguageTextAttribute()
+    {
+        if ($this->pravachan_language == 3) {
+            return 'Hindi, Gujarati';
+        }
+        
+        return \App\Constants\Constants::PRAVACHAN_LANGUAGE[$this->pravachan_language] ?? '-';
     }
 } 

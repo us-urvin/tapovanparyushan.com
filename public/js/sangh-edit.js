@@ -11,6 +11,7 @@ class Stepper {
         this.setupNavigationButtons();
         this.setupStepClickHandlers();
         this.setupFormValidation();
+        this.setupSanghTypeHandler();
     }
 
     setupFormValidation() {
@@ -87,7 +88,7 @@ class Stepper {
         if (!stepContent) return true;
 
         let isValid = true;
-        const inputs = stepContent.querySelectorAll('input:not([type="checkbox"]), select');
+        const inputs = stepContent.querySelectorAll('input:not([type="checkbox"]):not([disabled]), select:not([disabled])');
         
         inputs.forEach(input => {
             this.clearError(input);
@@ -466,6 +467,61 @@ class Stepper {
                 content.classList.add('hidden');
             }
         });
+    }
+
+    setupSanghTypeHandler() {
+        const sanghTypeSelect = document.querySelector('select[name="sangh_type"]');
+        if (sanghTypeSelect) {
+            // Set initial state
+            this.handleSanghTypeChange(sanghTypeSelect.value);
+            
+            // Add event listener for changes
+            sanghTypeSelect.addEventListener('change', (e) => {
+                this.handleSanghTypeChange(e.target.value);
+            });
+        }
+    }
+
+    handleSanghTypeChange(sanghType) {
+        const countryField = document.getElementById('country_field');
+        const stateInput = document.getElementById('state_input');
+        const stateDropdown = document.getElementById('state_dropdown');
+
+        if (sanghType === '1') { // India
+            // Set country to India and disable
+            if (countryField) {
+                countryField.value = 'India';
+                countryField.disabled = true;
+                countryField.style.backgroundColor = '#f3f4f6';
+            }
+
+            // Show dropdown, hide input
+            if (stateInput && stateDropdown) {
+                stateInput.style.display = 'none';
+                stateInput.disabled = true;
+                stateDropdown.style.display = 'block';
+                stateDropdown.disabled = false;
+                stateDropdown.classList.remove('hidden');
+            }
+        } else { // Outside India
+            // Enable country field
+            if (countryField) {
+                countryField.disabled = false;
+                countryField.style.backgroundColor = '';
+                if (countryField.value === 'India') {
+                    countryField.value = '';
+                }
+            }
+
+            // Show input, hide dropdown
+            if (stateInput && stateDropdown) {
+                stateInput.style.display = 'block';
+                stateInput.disabled = false;
+                stateDropdown.style.display = 'none';
+                stateDropdown.disabled = true;
+                stateDropdown.classList.add('hidden');
+            }
+        }
     }
 }
 

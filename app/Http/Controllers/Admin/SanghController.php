@@ -89,6 +89,14 @@ class SanghController extends Controller
         try {
             DB::beginTransaction();
 
+            // Handle state field based on sangh type
+            $stateValue = $request->state;
+            if ($request->sangh_type == 1 && is_numeric($request->state)) {
+                // For India, get state name from CountryState table
+                $countryState = \App\Models\CountryState::find($request->state);
+                $stateValue = $countryState ? $countryState->state_name : $request->state;
+            }
+
             // Check if sangh exists for current user
             $sangh = Sangh::where('id', $request->sangh_id)->first();
 
@@ -106,7 +114,7 @@ class SanghController extends Controller
                     'landmark' => $request->landmark,
                     'pincode' => $request->pincode,
                     'district' => $request->district,
-                    'state' => $request->state,
+                    'state' => $stateValue,
                     'country' => $request->country,
                     'jain_family_count' => $request->jain_family_count,
                     'age_group' => $request->age_group,
@@ -149,7 +157,7 @@ class SanghController extends Controller
                     'landmark' => $request->landmark,
                     'pincode' => $request->pincode,
                     'district' => $request->district,
-                    'state' => $request->state,
+                    'state' => $stateValue,
                     'country' => $request->country,
                     'jain_family_count' => $request->jain_family_count,
                     'age_group' => $request->age_group,

@@ -175,11 +175,6 @@ $(function() {
         var eventId = $(this).data('id');
         window.location.href = '/sangh/paryushan/events/' + eventId + '/edit';
     });
-    $(document).on('click', '.viewSanghBtn', function() {
-        var userId = $(this).data('user-id');
-        // TODO: Open view modal and load details via AJAX
-        Swal.fire({ icon: 'info', title: 'View', text: 'View modal coming soon.' });
-    });
 });
 </script>
 @endpush 

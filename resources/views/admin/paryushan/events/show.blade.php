@@ -123,6 +123,10 @@
             <div class="font-semibold text-xl mb-6">Regarding Pravachan</div>
             <div class="grid grid-cols-2 gap-y-6 gap-x-8">
                 <div class="col-span-2">
+                    <div class="text-[#666] text-base">What is the prefered language for pravachan?</div>
+                    <div class="font-semibold text-lg mt-1">{{ $event->pravachan_language_text }}</div>
+                </div>
+                <div class="col-span-2">
                     <div class="text-[#666] text-base">Is there a sangh member proficient in performing the 5 pratikraman with kriya?</div>
                     <div class="font-semibold text-lg mt-1">{{ $event->pratikraman_proficient ? 'Yes' : 'No' }}</div>
                 </div>
@@ -183,14 +187,30 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach(['pratikraman', 'pravachan', 'bhakti', 'other'] as $activity)
-                        <tr>
-                            <td class="py-2 px-4">{{ $activity }}</td>
-                            <td class="py-2 px-4">{{ $event->attendance[$activity]['morning'] ?? '-' }}</td>
-                            <td class="py-2 px-4">{{ $event->attendance[$activity]['afternoon'] ?? '-' }}</td>
-                            <td class="py-2 px-4">{{ $event->attendance[$activity]['evening'] ?? '-' }}</td>
-                        </tr>
-                    @endforeach
+                    <tr>
+                        <td class="py-2 px-4">Pratikraman</td>
+                        <td class="py-2 px-4">{{ $event->attendance['pratikraman']['morning'] ?? '-' }}</td>
+                        <td class="py-2 px-4">-</td>
+                        <td class="py-2 px-4">{{ $event->attendance['pratikraman']['evening'] ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="py-2 px-4">Pravachan</td>
+                        <td class="py-2 px-4">-</td>
+                        <td class="py-2 px-4">{{ $event->attendance['pravachan']['afternoon'] ?? '-' }}</td>
+                        <td class="py-2 px-4">-</td>
+                    </tr>
+                    <tr>
+                        <td class="py-2 px-4">Bhakti</td>
+                        <td class="py-2 px-4">-</td>
+                        <td class="py-2 px-4">-</td>
+                        <td class="py-2 px-4">{{ $event->attendance['bhakti']['evening'] ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="py-2 px-4">Other</td>
+                        <td class="py-2 px-4">-</td>
+                        <td class="py-2 px-4">{{ $event->attendance['other']['afternoon'] ?? '-' }}</td>
+                        <td class="py-2 px-4">{{ $event->attendance['other']['evening'] ?? '-' }}</td>
+                    </tr>
                 </tbody>
             </table>
         </div>

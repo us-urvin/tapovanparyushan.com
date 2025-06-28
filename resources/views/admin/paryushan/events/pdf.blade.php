@@ -104,6 +104,10 @@
         <div class="section-title">Regarding Pravachan</div>
         <table>
             <tr class="row">
+                <td class="label">What is the prefered language for pravachan?</td>
+                <td class="value">{{ $event->pravachan_language_text }}</td>
+            </tr>
+            <tr class="row">
                 <td class="label">Is there a sangh member proficient in performing the 5 pratikraman with kriya?</td>
                 <td class="value">{{ $event->pratikraman_proficient ? 'Yes' : 'No' }}</td>
             </tr>
@@ -160,14 +164,30 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach(['pratikraman', 'pravachan', 'bhakti', 'other'] as $activity)
-                    <tr>
-                        <td>{{ ucfirst($activity) }}</td>
-                        <td>{{ $event->attendance[$activity]['morning'] ?? '-' }}</td>
-                        <td>{{ $event->attendance[$activity]['afternoon'] ?? '-' }}</td>
-                        <td>{{ $event->attendance[$activity]['evening'] ?? '-' }}</td>
-                    </tr>
-                @endforeach
+                <tr>
+                    <td>Pratikraman</td>
+                    <td>{{ $event->attendance['pratikraman']['morning'] ?? '-' }}</td>
+                    <td>-</td>
+                    <td>{{ $event->attendance['pratikraman']['evening'] ?? '-' }}</td>
+                </tr>
+                <tr>
+                    <td>Pravachan</td>
+                    <td>-</td>
+                    <td>{{ $event->attendance['pravachan']['afternoon'] ?? '-' }}</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>Bhakti</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>{{ $event->attendance['bhakti']['evening'] ?? '-' }}</td>
+                </tr>
+                <tr>
+                    <td>Other</td>
+                    <td>-</td>
+                    <td>{{ $event->attendance['other']['afternoon'] ?? '-' }}</td>
+                    <td>{{ $event->attendance['other']['evening'] ?? '-' }}</td>
+                </tr>
             </tbody>
         </table>
     </div>

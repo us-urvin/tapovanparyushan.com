@@ -69,11 +69,28 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">State <span class="text-red-500">*</span></label>
-                    <input type="text" name="state" placeholder="State" value="{{ old('state', $sangh->state ?? '') }}" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#C9A14A]" required>
+                    <input type="text" name="state" id="state_input" placeholder="State" value="{{ old('state', $sangh->state ?? '') }}" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#C9A14A]" required>
+                    <select name="state" id="state_dropdown" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#C9A14A] hidden" required>
+                        <option value="">Select State</option>
+                        @foreach(\App\Models\CountryState::getIndianStates() as $id => $stateName)
+                            @php
+                                $currentState = old('state', $sangh->state ?? '');
+                                $isSelected = false;
+                                // If current state is numeric (ID), compare with ID
+                                if (is_numeric($currentState)) {
+                                    $isSelected = $currentState == $id;
+                                } else {
+                                    // If current state is text, compare with state name
+                                    $isSelected = $currentState == $stateName;
+                                }
+                            @endphp
+                            <option value="{{ $id }}" {{ $isSelected ? 'selected' : '' }}>{{ $stateName }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Country <span class="text-red-500">*</span></label>
-                    <input type="text" name="country" placeholder="Country" value="{{ old('country', $sangh->country ?? 'India') }}" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#C9A14A]" required>
+                    <input type="text" name="country" id="country_field" placeholder="Country" value="{{ old('country', $sangh->country ?? 'India') }}" class="w-full bg-white border border-[#F3E6C7] rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#C9A14A]" required>
                 </div>
             </div>
         </div>
