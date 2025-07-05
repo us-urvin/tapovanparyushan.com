@@ -115,12 +115,21 @@
         </div>
     </div>
     
-    <div class="form-group">
-        <input name="email" id="email" value="{{ old('email') }}" type="email" class="w-full form-input" placeholder=" ">
-        <label for="email" class="form-label">Trustee Email *</label>
-        @error('email')
-            <div class="error-message text-red-600 text-xs">{{ $message }}</div>
-        @enderror
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+        <div class="form-group">
+            <input name="email" id="email" value="{{ old('email') }}" type="email" class="w-full form-input" placeholder=" ">
+            <label for="email" class="form-label">Trustee Email *</label>
+            @error('email')
+                <div class="error-message text-red-600 text-xs">{{ $message }}</div>
+            @enderror
+        </div>
+        <div class="form-group">
+            <input name="mobile" id="mobile" value="{{ old('mobile') }}" type="tel" class="w-full form-input" placeholder=" " maxlength="10">
+            <label for="mobile" class="form-label">Mobile Number *</label>
+            @error('mobile')
+                <div class="error-message text-red-600 text-xs">{{ $message }}</div>
+            @enderror
+        </div>
     </div>
 
     <div class="form-group">
@@ -147,8 +156,6 @@
         @enderror
     </div>
 
-    <input type="hidden" name="mobile" value="{{ request()->get('mobile') }}">
-    
     <div class="pt-2">
         <button id="registerBtn" type="submit" class="w-full bg-[#C9A14A] text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-[#b38e3c] transition-all duration-300">
             <span id="registerBtnText">Submit</span>
@@ -187,6 +194,20 @@
                 }
             });
         });
+
+        // --- Mobile number validation ---
+        const mobileInput = document.getElementById('mobile');
+        if (mobileInput) {
+            mobileInput.addEventListener('input', function() {
+                // Remove any non-digit characters
+                this.value = this.value.replace(/\D/g, '');
+                
+                // Limit to 10 digits
+                if (this.value.length > 10) {
+                    this.value = this.value.slice(0, 10);
+                }
+            });
+        }
 
         // --- File input name display ---
         const documentInput = document.getElementById('documentInput');

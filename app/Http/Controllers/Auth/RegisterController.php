@@ -24,6 +24,7 @@ class RegisterController extends Controller
             'sangh_address' => ['required', 'string'],
             'name' => ['required', 'string', 'max:255'], // trustee name
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'mobile' => ['required', 'string', 'regex:/^\d{10}$/', 'unique:users'],
             'reason_note' => ['nullable', 'string'],
             'document' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ]);
@@ -31,7 +32,7 @@ class RegisterController extends Controller
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'mobile' => $validated['mobile'] ?? null,
+            'mobile' => $validated['mobile'],
             'password' => Hash::make('password'),
             'pincode' => $validated['pincode'],
         ]);
@@ -47,7 +48,7 @@ class RegisterController extends Controller
 
         $sangh->trustees()->create([
             'first_name' => $validated['name'],
-            'phone' => $validated['mobile'] ?? null,
+            'phone' => $validated['mobile'],
             'email' => $validated['email'],
         ]);
 
